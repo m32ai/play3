@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,11 +81,11 @@ const TrendingDashboard = () => {
                     <TooltipTrigger asChild>
                       <Button className="bg-yellow-500 hover:bg-yellow-600 text-black font-medium">
                         <Banana className="w-4 h-4 mr-2" />
-                        {buyAmount} SOL
+                        Quick Buy {buyAmount} SOL
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Quick Buy</p>
+                      <p>Buy {buyAmount} SOL of selected tokens</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
