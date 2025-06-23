@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Filter, ArrowUpDown, ArrowUp, ArrowDown, Copy, ExternalLink, Plus, X, RotateCcw } from "lucide-react";
+import { Search, Filter, ArrowUpDown, ArrowUp, ArrowDown, Copy, ExternalLink, Plus, X, RotateCcw, TrendingUp } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
@@ -222,6 +222,7 @@ const TrendingTokensTable = ({ timeframe }: { timeframe: string }) => {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-white flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-yellow-500" />
             Trending Tokens
             <Button size="sm" variant="ghost" className="text-yellow-500 hover:text-yellow-400">
               <Plus className="w-4 h-4 mr-1" />
@@ -405,10 +406,10 @@ const TrendingTokensTable = ({ timeframe }: { timeframe: string }) => {
           <Table>
             <TableHeader>
               <TableRow className="border-slate-700 hover:bg-slate-700/50">
-                <TableHead className="text-slate-300">Token</TableHead>
+                <TableHead className="text-slate-300">Pair Info</TableHead>
                 <TableHead className="text-slate-300 cursor-pointer" onClick={() => handleSort('price')}>
                   <div className="flex items-center gap-1">
-                    Price + % Change
+                    Price
                     {getSortIcon('price')}
                   </div>
                 </TableHead>
@@ -432,10 +433,11 @@ const TrendingTokensTable = ({ timeframe }: { timeframe: string }) => {
                 </TableHead>
                 <TableHead className="text-slate-300 cursor-pointer" onClick={() => handleSort('transactions')}>
                   <div className="flex items-center gap-1">
-                    TXNs
+                    TXNS
                     {getSortIcon('transactions')}
                   </div>
                 </TableHead>
+                <TableHead className="text-slate-300">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -443,13 +445,13 @@ const TrendingTokensTable = ({ timeframe }: { timeframe: string }) => {
                 <TableRow key={token.id} className="border-slate-700 hover:bg-slate-700/50 cursor-pointer">
                   <TableCell>
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                      <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
                         {token.symbol[0]}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-white font-medium">{token.name}</span>
-                          <span className="text-slate-400">${token.symbol}</span>
+                          <span className="text-white font-medium">${token.symbol}</span>
+                          <span className="text-slate-400">{token.name}</span>
                           <Button
                             size="sm"
                             variant="ghost"
@@ -466,24 +468,32 @@ const TrendingTokensTable = ({ timeframe }: { timeframe: string }) => {
                             <ExternalLink className="w-3 h-3" />
                           </Button>
                         </div>
+                        <div className="text-xs text-slate-500">{timeframe}</div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div>
-                      <div className="text-white">{formatPrice(token.price)}</div>
-                      <div className={`text-sm flex items-center gap-1 ${token.priceChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      <div className="text-white font-medium">{formatPrice(token.price)}</div>
+                      <div className={`text-sm flex items-center gap-1 font-medium ${token.priceChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                         {token.priceChange >= 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
-                        {Math.abs(token.priceChange).toFixed(1)}%
+                        {token.priceChange >= 0 ? '+' : ''}{token.priceChange.toFixed(2)}%
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-slate-300">{formatCurrency(token.marketCap)}</TableCell>
-                  <TableCell className="text-slate-300">{formatCurrency(token.liquidity)}</TableCell>
-                  <TableCell className="text-slate-300">{formatCurrency(token.volume)}</TableCell>
                   <TableCell>
                     <div>
-                      <div className="text-white">{token.transactions.toLocaleString()}</div>
+                      <div className="text-white font-medium">{formatCurrency(token.marketCap)}</div>
+                      <div className={`text-sm font-medium ${token.priceChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {token.priceChange >= 0 ? '+' : ''}{token.priceChange.toFixed(2)}%
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-white font-medium">{formatCurrency(token.liquidity)}</TableCell>
+                  <TableCell className="text-white font-medium">{formatCurrency(token.volume)}</TableCell>
+                  <TableCell>
+                    <div>
+                      <div className="text-white font-medium">{token.transactions.toLocaleString()}</div>
                       <div className="flex items-center gap-1 mt-1">
                         <div className="flex-1 bg-slate-600 rounded-full h-2">
                           <div 
@@ -492,10 +502,18 @@ const TrendingTokensTable = ({ timeframe }: { timeframe: string }) => {
                           />
                         </div>
                         <span className="text-xs text-slate-400">
-                          {token.buyTxns}/{token.sellTxns}
+                          {token.buyTxns} / {token.sellTxns}
                         </span>
                       </div>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <Button 
+                      size="sm" 
+                      className="bg-yellow-500 hover:bg-yellow-600 text-black font-medium"
+                    >
+                      Buy 0.1 SOL
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

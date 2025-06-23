@@ -31,10 +31,10 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
         id: "1",
         tokenName: "Frogolicious",
         tokenSymbol: "FROG",
-        buyCount: 23,
+        buyCount: 28,
         totalAmountUSD: 145670,
         totalAmountSOL: 234.5,
-        walletCount: 8,
+        walletCount: 12,
         wallets: [
           { address: "0x1234...5678", label: "Whale", amount: 45670 },
           { address: "0xabcd...efgh", label: "Sniper", amount: 32100 },
@@ -43,12 +43,12 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
       },
       {
         id: "2",
-        tokenName: "MoonShot",
-        tokenSymbol: "MOON",
-        buyCount: 18,
+        tokenName: "Banana",
+        tokenSymbol: "BANANA",
+        buyCount: 24,
         totalAmountUSD: 89340,
         totalAmountSOL: 143.8,
-        walletCount: 5,
+        walletCount: 9,
         wallets: [
           { address: "0xdef0...1234", label: "Alpha Caller", amount: 34500 },
           { address: "0x5678...9abc", label: "Whale", amount: 28900 },
@@ -57,16 +57,30 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
       },
       {
         id: "3",
-        tokenName: "DiamondHands",
-        tokenSymbol: "DIAMOND",
-        buyCount: 31,
+        tokenName: "Moon Rocket",
+        tokenSymbol: "MOON",
+        buyCount: 18,
         totalAmountUSD: 203450,
         totalAmountSOL: 327.2,
-        walletCount: 12,
+        walletCount: 7,
         wallets: [
           { address: "0xabc1...def2", label: "Insider", amount: 67800 },
           { address: "0x1357...2468", label: "Whale", amount: 45600 },
           { address: "0x9abc...def0", label: "Smart Money", amount: 38950 }
+        ]
+      },
+      {
+        id: "4",
+        tokenName: "Solana Doge",
+        tokenSymbol: "SOLDOGE",
+        buyCount: 15,
+        totalAmountUSD: 78450,
+        totalAmountSOL: 126.2,
+        walletCount: 6,
+        wallets: [
+          { address: "0xdef2...abc1", label: "Whale", amount: 28900 },
+          { address: "0x2468...1357", label: "Smart Money", amount: 25940 },
+          { address: "0x1357...2468", label: "Sniper", amount: 23610 }
         ]
       }
     ];
@@ -97,7 +111,7 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
         <CardTitle className="text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-purple-400" />
-            Tracked Wallet Buys
+            Tracked Wallet Activity
           </div>
           <Button size="sm" variant="ghost" className="text-yellow-500 hover:text-yellow-400">
             <Plus className="w-4 h-4 mr-1" />
@@ -106,82 +120,47 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-1">
+          <div className="grid grid-cols-4 gap-4 text-xs text-slate-400 uppercase tracking-wide pb-2 border-b border-slate-700">
+            <span>TOKEN</span>
+            <span className="text-right">BUYS</span>
+            <span className="text-right">WALLETS</span>
+            <span></span>
+          </div>
           {walletActivities.map((activity) => (
             <div 
               key={activity.id} 
-              className="p-4 rounded-lg bg-slate-700/50 hover:bg-slate-700/70 transition-colors cursor-pointer group"
+              className="grid grid-cols-4 gap-4 items-center p-2 rounded hover:bg-slate-700/30 transition-colors cursor-pointer group"
             >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                    {activity.tokenSymbol[0]}
-                  </div>
-                  <div>
-                    <div className="text-white font-medium">{activity.tokenName}</div>
-                    <div className="text-slate-400 text-sm">${activity.tokenSymbol}</div>
-                  </div>
-                </div>
-                <ExternalLink className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4 mb-3">
-                <div>
-                  <div className="text-slate-400 text-sm">Buys</div>
-                  <div className="text-white font-medium">{activity.buyCount}</div>
+              <div className="flex items-center space-x-2">
+                <div className="w-6 h-6 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                  {activity.tokenSymbol[0]}
                 </div>
                 <div>
-                  <div className="text-slate-400 text-sm">Total Amount</div>
-                  <div className="text-white font-medium">{formatCurrency(activity.totalAmountUSD)}</div>
-                  <div className="text-slate-400 text-xs">{activity.totalAmountSOL.toFixed(1)} SOL</div>
+                  <div className="text-white font-medium text-sm">${activity.tokenSymbol}</div>
+                  <div className="text-slate-400 text-xs">{activity.tokenName}</div>
                 </div>
               </div>
               
-              <div className="flex items-center justify-between">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white p-2">
-                      <Users className="w-4 h-4 mr-1" />
-                      {activity.walletCount} Wallets
-                      <ChevronDown className="w-4 h-4 ml-1" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-slate-700 border-slate-600 w-64">
-                    {activity.wallets.map((wallet, index) => (
-                      <DropdownMenuItem 
-                        key={index} 
-                        className="text-white hover:bg-slate-600 cursor-pointer"
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center gap-2">
-                            <span className="text-slate-400 text-sm">{wallet.address}</span>
-                            <Badge variant="secondary" className={getLabelColor(wallet.label)}>
-                              {wallet.label}
-                            </Badge>
-                          </div>
-                          <span className="text-white text-sm">{formatCurrency(wallet.amount)}</span>
-                        </div>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                
+              <div className="text-right">
+                <div className="text-white font-medium">{activity.buyCount}</div>
+              </div>
+              
+              <div className="text-right">
+                <div className="text-white font-medium">{activity.walletCount}</div>
+              </div>
+              
+              <div className="text-right">
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="text-blue-400 hover:text-blue-300"
+                  className="text-blue-400 hover:text-blue-300 text-xs p-1 h-auto"
                 >
-                  View Wallets
+                  View
                 </Button>
               </div>
             </div>
           ))}
-        </div>
-        
-        <div className="mt-4 pt-4 border-t border-slate-700">
-          <Button variant="ghost" className="w-full text-slate-400 hover:text-white text-sm">
-            View All Wallet Activity
-          </Button>
         </div>
       </CardContent>
     </Card>
