@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -90,6 +89,11 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
     // Implement token click logic here
   };
 
+  const handleQuickBuy = (token: TwitterToken) => {
+    console.log('Quick buy clicked for Twitter token:', token.symbol);
+    // Implement quick buy logic here
+  };
+
   return (
     <Card className="bg-slate-800/50 border-slate-700">
       <CardHeader className="pb-3">
@@ -114,28 +118,41 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
           {twitterTokens.map((token) => (
             <div 
               key={token.id} 
-              className="flex items-center justify-between p-2 rounded hover:bg-slate-700/30 transition-colors cursor-pointer"
+              className="flex items-center justify-between p-2 rounded hover:bg-slate-700/30 transition-colors cursor-pointer group"
               onClick={() => handleTokenClick(token)}
             >
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 flex-1">
                 <span className="text-slate-400 text-sm font-medium w-4">{token.rank}</span>
                 <div className="w-6 h-6 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
                   {token.icon}
                 </div>
-                <div>
+                <div className="flex-1">
                   <div className="text-white font-medium text-sm">${token.symbol}</div>
                   <div className="text-slate-400 text-xs">{token.name}</div>
                 </div>
               </div>
               
-              <div className="text-right">
-                <div className="text-white font-medium text-sm">{token.tweetCount.toLocaleString()}</div>
-                <div className="flex items-center justify-end gap-1">
-                  <span className="text-green-400 text-xs font-medium">
-                    {token.trendPercentage}%
-                  </span>
-                  <span className="text-slate-400 text-xs">tweets</span>
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <div className="text-white font-medium text-sm">{token.tweetCount.toLocaleString()}</div>
+                  <div className="flex items-center justify-end gap-1">
+                    <span className="text-green-400 text-xs font-medium">
+                      {token.trendPercentage}%
+                    </span>
+                    <span className="text-slate-400 text-xs">tweets</span>
+                  </div>
                 </div>
+                
+                <Button 
+                  size="sm" 
+                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-medium text-xs h-7 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleQuickBuy(token);
+                  }}
+                >
+                  Buy
+                </Button>
               </div>
             </div>
           ))}
