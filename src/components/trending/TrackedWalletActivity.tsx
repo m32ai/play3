@@ -34,7 +34,7 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
         id: "2",
         icon: "M",
         tokenName: "MoonShot",
-        tokenSymbol: "MOON",
+        tokenSymbol: "MOON", 
         buyCount: 18,
         totalAmountUSD: 89300,
         totalAmountSOL: 143.8,
@@ -61,6 +61,26 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
     return `$${value.toFixed(0)}`;
   };
 
+  const handleAddToDashboard = () => {
+    console.log('Add Tracked Wallet Activity to dashboard clicked');
+    // Implement add to dashboard logic here
+  };
+
+  const handleViewWallets = (activity: WalletActivity) => {
+    console.log('View wallets clicked for:', activity.tokenSymbol);
+    // Implement view wallets logic here
+  };
+
+  const handleViewAllActivity = () => {
+    console.log('View All Wallet Activity clicked');
+    // Implement view all activity logic here
+  };
+
+  const handleActivityClick = (activity: WalletActivity) => {
+    console.log('Wallet activity clicked:', activity.tokenSymbol);
+    // Implement activity click logic here
+  };
+
   return (
     <Card className="bg-slate-800/50 border-slate-700">
       <CardHeader className="pb-3">
@@ -69,7 +89,12 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
             <Users className="w-4 h-4 text-purple-400" />
             Tracked Wallet Buys
           </div>
-          <Button size="sm" variant="ghost" className="text-yellow-500 hover:text-yellow-400 text-xs h-7">
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            className="text-yellow-500 hover:text-yellow-400 text-xs h-7"
+            onClick={handleAddToDashboard}
+          >
             <Plus className="w-3 h-3 mr-1" />
             Add to Dashboard
           </Button>
@@ -81,6 +106,7 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
             <div 
               key={activity.id} 
               className="p-3 rounded-lg hover:bg-slate-700/30 transition-colors cursor-pointer border border-slate-700/50"
+              onClick={() => handleActivityClick(activity)}
             >
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center space-x-3">
@@ -114,6 +140,10 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
                   variant="ghost" 
                   size="sm" 
                   className="text-blue-400 hover:text-blue-300 text-xs h-6 px-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewWallets(activity);
+                  }}
                 >
                   View Wallets
                 </Button>
@@ -126,6 +156,7 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
           <Button 
             variant="ghost" 
             className="w-full text-blue-400 hover:text-blue-300 text-sm h-8"
+            onClick={handleViewAllActivity}
           >
             View All Wallet Activity
           </Button>

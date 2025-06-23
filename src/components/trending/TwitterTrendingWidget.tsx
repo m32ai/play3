@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, TrendingUp, TrendingDown, Twitter } from "lucide-react";
+import { Plus, Twitter } from "lucide-react";
 
 interface TwitterToken {
   id: string;
@@ -75,6 +75,21 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
     setTwitterTokens(mockData);
   }, [timeframe]);
 
+  const handleAddToDashboard = () => {
+    console.log('Add Twitter Trending to dashboard clicked');
+    // Implement add to dashboard logic here
+  };
+
+  const handleViewAllTrends = () => {
+    console.log('View All Twitter Trends clicked');
+    // Implement view all trends logic here
+  };
+
+  const handleTokenClick = (token: TwitterToken) => {
+    console.log('Twitter token clicked:', token.symbol);
+    // Implement token click logic here
+  };
+
   return (
     <Card className="bg-slate-800/50 border-slate-700">
       <CardHeader className="pb-3">
@@ -83,7 +98,12 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
             <Twitter className="w-4 h-4 text-blue-400" />
             Twitter Trending
           </div>
-          <Button size="sm" variant="ghost" className="text-yellow-500 hover:text-yellow-400 text-xs h-7">
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            className="text-yellow-500 hover:text-yellow-400 text-xs h-7"
+            onClick={handleAddToDashboard}
+          >
             <Plus className="w-3 h-3 mr-1" />
             Add to Dashboard
           </Button>
@@ -95,6 +115,7 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
             <div 
               key={token.id} 
               className="flex items-center justify-between p-2 rounded hover:bg-slate-700/30 transition-colors cursor-pointer"
+              onClick={() => handleTokenClick(token)}
             >
               <div className="flex items-center space-x-3">
                 <span className="text-slate-400 text-sm font-medium w-4">{token.rank}</span>
@@ -124,6 +145,7 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
           <Button 
             variant="ghost" 
             className="w-full text-blue-400 hover:text-blue-300 text-sm h-8"
+            onClick={handleViewAllTrends}
           >
             View All Twitter Trends
           </Button>
