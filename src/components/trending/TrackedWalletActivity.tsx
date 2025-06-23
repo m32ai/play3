@@ -17,6 +17,7 @@ interface WalletActivity {
 
 const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
   const [walletActivities, setWalletActivities] = useState<WalletActivity[]>([]);
+  const [showAllActivity, setShowAllActivity] = useState(false);
 
   useEffect(() => {
     const mockData: WalletActivity[] = [
@@ -49,6 +50,26 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
         totalAmountUSD: 203400,
         totalAmountSOL: 327.2,
         walletCount: 12
+      },
+      {
+        id: "4",
+        icon: "R",
+        tokenName: "RocketFuel",
+        tokenSymbol: "ROCKET",
+        buyCount: 15,
+        totalAmountUSD: 67800,
+        totalAmountSOL: 109.2,
+        walletCount: 6
+      },
+      {
+        id: "5",
+        icon: "S",
+        tokenName: "StarToken",
+        tokenSymbol: "STAR",
+        buyCount: 42,
+        totalAmountUSD: 298500,
+        totalAmountSOL: 480.3,
+        walletCount: 18
       }
     ];
 
@@ -73,7 +94,7 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
 
   const handleViewAllActivity = () => {
     console.log('View All Wallet Activity clicked');
-    // Implement view all activity logic here
+    setShowAllActivity(!showAllActivity);
   };
 
   const handleActivityClick = (activity: WalletActivity) => {
@@ -85,6 +106,8 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
     console.log('Quick buy clicked for wallet activity token:', activity.tokenSymbol);
     // Implement quick buy logic here
   };
+
+  const activitiesToShow = showAllActivity ? walletActivities : walletActivities.slice(0, 3);
 
   return (
     <Card className="bg-slate-800/50 border-slate-700">
@@ -107,7 +130,7 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-3">
-          {walletActivities.map((activity) => (
+          {activitiesToShow.map((activity) => (
             <div 
               key={activity.id} 
               className="p-3 rounded-lg hover:bg-slate-700/30 transition-colors cursor-pointer border border-slate-700/50 group"
@@ -173,7 +196,7 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
             className="w-full text-blue-400 hover:text-blue-300 text-sm h-8"
             onClick={handleViewAllActivity}
           >
-            View All Wallet Activity
+            {showAllActivity ? 'Show Less' : 'View All Wallet Activity'}
           </Button>
         </div>
       </CardContent>

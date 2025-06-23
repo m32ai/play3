@@ -27,6 +27,7 @@ interface Tweet {
 
 const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
   const [twitterTokens, setTwitterTokens] = useState<TwitterToken[]>([]);
+  const [showAllTrends, setShowAllTrends] = useState(false);
 
   // Mock tweets data for each token
   const mockTweets: Record<string, Tweet[]> = {
@@ -196,7 +197,7 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
 
   const handleViewAllTrends = () => {
     console.log('View All Twitter Trends clicked');
-    // Implement view all trends logic here
+    setShowAllTrends(!showAllTrends);
   };
 
   const handleTokenClick = (token: TwitterToken) => {
@@ -208,6 +209,8 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
     console.log('Quick buy clicked for Twitter token:', token.symbol);
     // Implement quick buy logic here
   };
+
+  const tokensToShow = showAllTrends ? twitterTokens : twitterTokens.slice(0, 5);
 
   return (
     <Card className="bg-slate-800/50 border-slate-700">
@@ -230,7 +233,7 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-2">
-          {twitterTokens.map((token) => (
+          {tokensToShow.map((token) => (
             <div 
               key={token.id} 
               className="flex items-center justify-between p-2 rounded hover:bg-slate-700/30 transition-colors cursor-pointer group"
@@ -244,15 +247,11 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <div className="text-white font-medium text-sm">${token.symbol}</div>
-                    <HoverCard>
+                    <HoverCard openDelay={200} closeDelay={300}>
                       <HoverCardTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-5 w-5 p-0 text-blue-400 hover:text-blue-300"
-                        >
+                        <div className="text-blue-400 hover:text-blue-300 cursor-pointer">
                           <Twitter className="w-3 h-3" />
-                        </Button>
+                        </div>
                       </HoverCardTrigger>
                       <HoverCardContent className="w-80 bg-slate-800 border-slate-700 text-white">
                         <div className="space-y-3">
@@ -324,7 +323,7 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
             className="w-full text-blue-400 hover:text-blue-300 text-sm h-8"
             onClick={handleViewAllTrends}
           >
-            View All Twitter Trends
+            {showAllTrends ? 'Show Less' : 'View All Twitter Trends'}
           </Button>
         </div>
       </CardContent>
