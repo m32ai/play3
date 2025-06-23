@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -247,6 +246,10 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
 
   const hasActiveFilters = Object.keys(activeFilters).length > 0 || searchTerm;
 
+  const handleTokenClick = (token: Token) => {
+    window.open(`/token/${token.symbol}`, '_blank');
+  };
+
   return (
     <TooltipProvider>
       <Card className="bg-slate-800/50 border-slate-700">
@@ -470,7 +473,11 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                 </TableHeader>
                 <TableBody>
                   {filteredTokens.map((token) => (
-                    <TableRow key={token.id} className="border-slate-700 hover:bg-slate-700/50 cursor-pointer animate-fade-in">
+                    <TableRow 
+                      key={token.id} 
+                      className="border-slate-700 hover:bg-slate-700/50 cursor-pointer animate-fade-in"
+                      onClick={() => handleTokenClick(token)}
+                    >
                       <TableCell>
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-xs">

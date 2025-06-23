@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import TrendingDashboard from "./pages/TrendingDashboard";
 import AllTwitterTrends from "./pages/AllTwitterTrends";
 import AllWalletActivity from "./pages/AllWalletActivity";
+import TokenDetail from "./pages/TokenDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

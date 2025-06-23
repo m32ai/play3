@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Users } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface WalletActivity {
   id: string;
@@ -18,8 +17,10 @@ interface WalletActivity {
 
 const AllWalletActivity = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [timeframe, setTimeframe] = useState("5m");
   const [walletActivities, setWalletActivities] = useState<WalletActivity[]>([]);
+  const highlightToken = searchParams.get('token');
 
   useEffect(() => {
     // Extended mock data for all wallet activities
@@ -97,8 +98,19 @@ const AllWalletActivity = () => {
       }
     ];
 
-    setWalletActivities(mockData);
-  }, [timeframe]);
+    let filteredData = mockData;
+    
+    // Highlight specific token if provided
+    if (highlightToken) {
+      filteredData = mockData.sort((a, b) => {
+        if (a.tokenSymbol.toLowerCase() === highlightToken.toLowerCase()) return -1;
+        if (b.tokenSymbol.toLowerCase() === highlightToken.toLowerCase()) return 1;
+        return 0;
+      });
+    }
+
+    setWalletActivities(filteredData);
+  }, [timeframe, highlightToken]);
 
   const formatCurrency = (value: number) => {
     if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
@@ -160,6 +172,16 @@ const AllWalletActivity = () => {
 
       {/* Content */}
       <div className="container mx-auto px-6 py-6">
+        {highlightToken && (
+          <div className="mb-4">
+            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
+              <p className="text-yellow-400 text-sm">
+                Showing wallet activity for token: <span className="font-bold">${highlightToken}</span>
+              </p>
+            </div>
+          </div>
+        )}
+        
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
@@ -170,7 +192,14 @@ const AllWalletActivity = () => {
           <CardContent>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               {walletActivities.map((activity) => (
-                <div key={activity.id} className="p-4 rounded-lg bg-slate-700/30 border border-slate-600/50 hover:bg-slate-700/50 transition-colors">
+                <div 
+                  key={activity.id} 
+                  className={`p-4 rounded-lg border transition-colors ${
+                    highlightToken && activity.tokenSymbol.toLowerCase() === highlightToken.toLowerCase()
+                      ? 'border-yellow-500/50 bg-yellow-500/10'
+                      : 'border-slate-600/50 bg-slate-700/30 hover:bg-slate-700/50'
+                  }`}
+                >
                   <div className="flex items-center space-x-3 mb-3">
                     <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
                       {activity.icon}

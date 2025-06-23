@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Users, Banana } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import WalletTrackerModal from "../modals/WalletTrackerModal";
 
 interface WalletActivity {
   id: string;
@@ -20,6 +21,8 @@ const TrackedWalletActivity = ({ timeframe, buyAmount }: { timeframe: string; bu
   const navigate = useNavigate();
   const [walletActivities, setWalletActivities] = useState<WalletActivity[]>([]);
   const [showAllActivity, setShowAllActivity] = useState(false);
+  const [isWalletTrackerOpen, setIsWalletTrackerOpen] = useState(false);
+  const [highlightLabel, setHighlightLabel] = useState<string>("");
 
   const generateRandomWalletData = (): WalletActivity[] => {
     const baseTokens = [
@@ -63,9 +66,16 @@ const TrackedWalletActivity = ({ timeframe, buyAmount }: { timeframe: string; bu
     // Implement add to dashboard logic here
   };
 
+  const handleWalletLabelClick = (label: string) => {
+    console.log('Wallet label clicked:', label);
+    setHighlightLabel(label);
+    setIsWalletTrackerOpen(true);
+  };
+
   const handleViewWallets = (activity: WalletActivity) => {
     console.log('View wallets clicked for:', activity.tokenSymbol);
-    // Implement view wallets logic here
+    // Navigate to wallet activity page with filter
+    navigate(`/wallet-activity?token=${activity.tokenSymbol}`);
   };
 
   const handleViewAllActivity = () => {
@@ -110,6 +120,27 @@ const TrackedWalletActivity = ({ timeframe, buyAmount }: { timeframe: string; bu
                     <div>
                       <div className="text-white font-medium text-sm">{activity.tokenName}</div>
                       <div className="text-slate-400 text-xs">${activity.tokenSymbol}</div>
+                      {/* Add wallet labels */}
+                      <div className="flex gap-1 mt-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleWalletLabelClick('Sniper');
+                          }}
+                          className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded hover:bg-orange-500/30 transition-colors"
+                        >
+                          Sniper
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleWalletLabelClick('Whale');
+                          }}
+                          className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded hover:bg-blue-500/30 transition-colors"
+                        >
+                          Whale
+                        </button>
+                      </div>
                     </div>
                   </div>
                   <Tooltip>
@@ -175,6 +206,12 @@ const TrackedWalletActivity = ({ timeframe, buyAmount }: { timeframe: string; bu
           </div>
         </CardContent>
       </Card>
+
+      <WalletTrackerModal
+        isOpen={isWalletTrackerOpen}
+        onClose={() => setIsWalletTrackerOpen(false)}
+        highlightLabel={highlightLabel}
+      />
     </TooltipProvider>
   );
 };
