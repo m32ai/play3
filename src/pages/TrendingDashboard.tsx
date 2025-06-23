@@ -74,13 +74,13 @@ const TrendingDashboard = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-6 py-6">
-        <div className="grid lg:grid-cols-4 gap-6">
-          {/* Main Trending Table */}
-          <div className="lg:col-span-3">
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Main Trending Table - Left Side */}
+          <div className="lg:col-span-2">
             <TrendingTokensTable timeframe={timeframe} />
           </div>
           
-          {/* Side Widgets */}
+          {/* Side Widgets - Right Side */}
           <div className="space-y-6">
             <TwitterTrendingWidget timeframe={timeframe} />
             <TrackedWalletActivity timeframe={timeframe} />
