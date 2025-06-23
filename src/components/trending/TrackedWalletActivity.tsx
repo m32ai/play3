@@ -81,6 +81,11 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
     // Implement activity click logic here
   };
 
+  const handleQuickBuy = (activity: WalletActivity) => {
+    console.log('Quick buy clicked for wallet activity token:', activity.tokenSymbol);
+    // Implement quick buy logic here
+  };
+
   return (
     <Card className="bg-slate-800/50 border-slate-700">
       <CardHeader className="pb-3">
@@ -105,7 +110,7 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
           {walletActivities.map((activity) => (
             <div 
               key={activity.id} 
-              className="p-3 rounded-lg hover:bg-slate-700/30 transition-colors cursor-pointer border border-slate-700/50"
+              className="p-3 rounded-lg hover:bg-slate-700/30 transition-colors cursor-pointer border border-slate-700/50 group"
               onClick={() => handleActivityClick(activity)}
             >
               <div className="flex items-start justify-between mb-2">
@@ -118,6 +123,16 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
                     <div className="text-slate-400 text-xs">${activity.tokenSymbol}</div>
                   </div>
                 </div>
+                <Button 
+                  size="sm" 
+                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-medium text-xs h-7 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleQuickBuy(activity);
+                  }}
+                >
+                  Buy
+                </Button>
               </div>
               
               <div className="grid grid-cols-2 gap-4 text-xs">
