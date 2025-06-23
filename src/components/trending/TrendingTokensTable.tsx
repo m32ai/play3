@@ -8,6 +8,7 @@ import { Search, Filter, ArrowUpDown, ArrowUp, ArrowDown, Copy, ExternalLink, X,
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 interface Token {
   id: string;
@@ -258,6 +259,26 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
 
   const handleTokenClick = (token: Token) => {
     window.open(`/token/${token.symbol}`, '_blank');
+  };
+
+  // Mock function to generate fake tweets for demonstration
+  const generateMockTweets = (tokenSymbol: string) => {
+    const tweetTemplates = [
+      `🚀 $${tokenSymbol} is absolutely mooning right now! Don't miss this gem! #crypto #altcoin`,
+      `Just bought more $${tokenSymbol}. This project has incredible potential! 💎🙌`,
+      `$${tokenSymbol} community is growing fast! Join us before it's too late! 🔥`,
+      `Technical analysis looking bullish for $${tokenSymbol}. Target: 100x 📈`,
+      `$${tokenSymbol} holders are diamond hands! 💎 Never selling! #HODL`,
+    ];
+    
+    return tweetTemplates.slice(0, 3).map((template, index) => ({
+      id: index + 1,
+      content: template,
+      author: `@cryptotrader${index + 1}`,
+      timestamp: `${Math.floor(Math.random() * 24)}h ago`,
+      likes: Math.floor(Math.random() * 1000) + 10,
+      retweets: Math.floor(Math.random() * 500) + 5,
+    }));
   };
 
   return (
@@ -575,16 +596,56 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                               <div className="text-xs text-slate-500">{timeframe}</div>
                               <div className="flex items-center gap-1 ml-2">
                                 {token.socials.twitter && (
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => openSocialLink(token.socials.twitter!)}
-                                    className="h-5 w-5 p-0 text-slate-400 hover:text-blue-400"
-                                  >
-                                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                                    </svg>
-                                  </Button>
+                                  <HoverCard>
+                                    <HoverCardTrigger asChild>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => openSocialLink(token.socials.twitter!)}
+                                        className="h-5 w-5 p-0 text-slate-400 hover:text-blue-400"
+                                      >
+                                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                        </svg>
+                                      </Button>
+                                    </HoverCardTrigger>
+                                    <HoverCardContent className="w-80 bg-slate-800 border-slate-700 text-white">
+                                      <div className="space-y-3">
+                                        <h4 className="text-sm font-semibold text-blue-400">Latest Tweets about ${token.symbol}</h4>
+                                        {generateMockTweets(token.symbol).map((tweet) => (
+                                          <div key={tweet.id} className="border-b border-slate-700 pb-3 last:border-b-0">
+                                            <div className="flex items-start space-x-2">
+                                              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                                {tweet.author[1].toUpperCase()}
+                                              </div>
+                                              <div className="flex-1">
+                                                <div className="flex items-center space-x-2 mb-1">
+                                                  <span className="text-blue-400 text-sm font-medium">{tweet.author}</span>
+                                                  <span className="text-slate-500 text-xs">•</span>
+                                                  <span className="text-slate-500 text-xs">{tweet.timestamp}</span>
+                                                </div>
+                                                <p className="text-sm text-slate-300 mb-2">{tweet.content}</p>
+                                                <div className="flex items-center space-x-4 text-xs text-slate-500">
+                                                  <span>❤️ {tweet.likes}</span>
+                                                  <span>🔄 {tweet.retweets}</span>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ))}
+                                        <div className="text-center">
+                                          <Button 
+                                            size="sm" 
+                                            variant="outline" 
+                                            className="text-blue-400 border-blue-400 hover:bg-blue-400 hover:text-white"
+                                            onClick={() => openSocialLink(token.socials.twitter!)}
+                                          >
+                                            View more on Twitter
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </HoverCardContent>
+                                  </HoverCard>
                                 )}
                                 {token.socials.telegram && (
                                   <Button
