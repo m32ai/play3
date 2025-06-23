@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface WalletActivity {
@@ -87,20 +87,9 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
   return (
     <Card className="bg-slate-800/50 border-slate-700">
       <CardHeader className="pb-3">
-        <CardTitle className="text-white flex items-center justify-between text-base">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-purple-400" />
-            Tracked Wallet Buys
-          </div>
-          <Button 
-            size="sm" 
-            variant="ghost" 
-            className="text-yellow-500 hover:text-yellow-400 text-xs h-7"
-            onClick={handleAddToDashboard}
-          >
-            <Plus className="w-3 h-3 mr-1" />
-            Add to Dashboard
-          </Button>
+        <CardTitle className="text-white flex items-center gap-2 text-base">
+          <Users className="w-4 h-4 text-purple-400" />
+          Tracked Wallet Buys
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">

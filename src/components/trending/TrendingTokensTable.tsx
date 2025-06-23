@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Filter, ArrowUpDown, ArrowUp, ArrowDown, Copy, ExternalLink, Plus, X, RotateCcw, TrendingUp } from "lucide-react";
+import { Search, Filter, ArrowUpDown, ArrowUp, ArrowDown, Copy, ExternalLink, X, RotateCcw, TrendingUp } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
@@ -257,15 +257,6 @@ const TrendingTokensTable = ({ timeframe }: { timeframe: string }) => {
           <CardTitle className="text-white flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-yellow-500" />
             Trending Tokens
-            <Button 
-              size="sm" 
-              variant="ghost" 
-              className="text-yellow-500 hover:text-yellow-400"
-              onClick={handleAddToDashboard}
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              Add to Dashboard
-            </Button>
           </CardTitle>
           <div className="flex items-center gap-2">
             {hasActiveFilters && (
