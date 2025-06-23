@@ -69,21 +69,12 @@ const TrendingTokensTable = ({ timeframe }: { timeframe: string }) => {
   });
   const [activeFilters, setActiveFilters] = useState<Partial<Filters>>({});
 
-  // Mock data generation
-  useEffect(() => {
-    const mockTokens: Token[] = [
+  const generateRandomTokenData = (): Token[] => {
+    const baseTokens = [
       {
         id: "1",
         name: "Frogolicious",
         symbol: "FROG",
-        price: 0.0002389,
-        priceChange: 984.2,
-        marketCap: 1200000,
-        liquidity: 39000,
-        volume: 248000,
-        transactions: 1558,
-        buyTxns: 825,
-        sellTxns: 733,
         contractAddress: "0x1234...5678",
         socials: {
           twitter: "https://twitter.com/frogolicious",
@@ -96,14 +87,6 @@ const TrendingTokensTable = ({ timeframe }: { timeframe: string }) => {
         id: "2",
         name: "MoonShot",
         symbol: "MOON",
-        price: 0.0015432,
-        priceChange: -48.3,
-        marketCap: 850000,
-        liquidity: 65000,
-        volume: 420000,
-        transactions: 2341,
-        buyTxns: 1200,
-        sellTxns: 1141,
         contractAddress: "0xabcd...efgh",
         socials: {
           twitter: "https://twitter.com/moonshot",
@@ -115,14 +98,6 @@ const TrendingTokensTable = ({ timeframe }: { timeframe: string }) => {
         id: "3",
         name: "DiamondHands",
         symbol: "DIAMOND",
-        price: 0.0008765,
-        priceChange: 156.7,
-        marketCap: 2100000,
-        liquidity: 120000,
-        volume: 680000,
-        transactions: 892,
-        buyTxns: 567,
-        sellTxns: 325,
         contractAddress: "0x9876...5432",
         socials: {
           twitter: "https://twitter.com/diamondhands",
@@ -134,14 +109,6 @@ const TrendingTokensTable = ({ timeframe }: { timeframe: string }) => {
         id: "4",
         name: "RocketFuel",
         symbol: "ROCKET",
-        price: 0.0034567,
-        priceChange: 78.9,
-        marketCap: 5600000,
-        liquidity: 234000,
-        volume: 1200000,
-        transactions: 3456,
-        buyTxns: 2100,
-        sellTxns: 1356,
         contractAddress: "0xdef0...1234",
         socials: {
           twitter: "https://twitter.com/rocketfuel",
@@ -154,14 +121,6 @@ const TrendingTokensTable = ({ timeframe }: { timeframe: string }) => {
         id: "5",
         name: "CryptoKing",
         symbol: "KING",
-        price: 0.0012345,
-        priceChange: -23.1,
-        marketCap: 890000,
-        liquidity: 45000,
-        volume: 156000,
-        transactions: 678,
-        buyTxns: 234,
-        sellTxns: 444,
         contractAddress: "0x5678...9abc",
         socials: {
           telegram: "https://t.me/cryptoking",
@@ -170,8 +129,35 @@ const TrendingTokensTable = ({ timeframe }: { timeframe: string }) => {
         }
       }
     ];
-    setTokens(mockTokens);
-    setFilteredTokens(mockTokens);
+
+    return baseTokens.map((token) => ({
+      ...token,
+      price: Math.random() * 0.01,
+      priceChange: (Math.random() - 0.5) * 1000,
+      marketCap: Math.floor(Math.random() * 5000000) + 500000,
+      liquidity: Math.floor(Math.random() * 200000) + 30000,
+      volume: Math.floor(Math.random() * 1000000) + 100000,
+      transactions: Math.floor(Math.random() * 3000) + 500,
+      buyTxns: Math.floor(Math.random() * 2000) + 200,
+      sellTxns: Math.floor(Math.random() * 1500) + 200
+    }));
+  };
+
+  // Mock data generation with auto-refresh
+  useEffect(() => {
+    // Initial data load
+    const initialTokens = generateRandomTokenData();
+    setTokens(initialTokens);
+    setFilteredTokens(initialTokens);
+
+    // Set up interval to refresh data every second
+    const interval = setInterval(() => {
+      const newTokens = generateRandomTokenData();
+      setTokens(newTokens);
+    }, 1000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
   }, [timeframe]);
 
   // Search functionality
@@ -495,7 +481,7 @@ const TrendingTokensTable = ({ timeframe }: { timeframe: string }) => {
               </TableHeader>
               <TableBody>
                 {filteredTokens.map((token) => (
-                  <TableRow key={token.id} className="border-slate-700 hover:bg-slate-700/50 cursor-pointer">
+                  <TableRow key={token.id} className="border-slate-700 hover:bg-slate-700/50 cursor-pointer animate-fade-in">
                     <TableCell>
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
@@ -569,8 +555,8 @@ const TrendingTokensTable = ({ timeframe }: { timeframe: string }) => {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="text-white font-medium">{formatPrice(token.price)}</div>
-                        <div className={`text-sm flex items-center gap-1 font-medium ${token.priceChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        <div className="text-white font-medium transition-all duration-500">{formatPrice(token.price)}</div>
+                        <div className={`text-sm flex items-center gap-1 font-medium transition-all duration-500 ${token.priceChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                           {token.priceChange >= 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
                           {token.priceChange >= 0 ? '+' : ''}{token.priceChange.toFixed(2)}%
                         </div>
@@ -578,25 +564,25 @@ const TrendingTokensTable = ({ timeframe }: { timeframe: string }) => {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="text-white font-medium">{formatCurrency(token.marketCap)}</div>
-                        <div className={`text-sm font-medium ${token.priceChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        <div className="text-white font-medium transition-all duration-500">{formatCurrency(token.marketCap)}</div>
+                        <div className={`text-sm font-medium transition-all duration-500 ${token.priceChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                           {token.priceChange >= 0 ? '+' : ''}{token.priceChange.toFixed(2)}%
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-white font-medium">{formatCurrency(token.liquidity)}</TableCell>
-                    <TableCell className="text-white font-medium">{formatCurrency(token.volume)}</TableCell>
+                    <TableCell className="text-white font-medium transition-all duration-500">{formatCurrency(token.liquidity)}</TableCell>
+                    <TableCell className="text-white font-medium transition-all duration-500">{formatCurrency(token.volume)}</TableCell>
                     <TableCell>
                       <div>
-                        <div className="text-white font-medium">{token.transactions.toLocaleString()}</div>
+                        <div className="text-white font-medium transition-all duration-500">{token.transactions.toLocaleString()}</div>
                         <div className="flex items-center gap-1 mt-1">
                           <div className="flex-1 bg-slate-600 rounded-full h-2">
                             <div 
-                              className="bg-green-500 h-2 rounded-full" 
+                              className="bg-green-500 h-2 rounded-full transition-all duration-500" 
                               style={{ width: `${(token.buyTxns / token.transactions) * 100}%` }}
                             />
                           </div>
-                          <span className="text-xs text-slate-400">
+                          <span className="text-xs text-slate-400 transition-all duration-500">
                             {token.buyTxns} / {token.sellTxns}
                           </span>
                         </div>

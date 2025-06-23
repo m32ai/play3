@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -136,61 +135,35 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
     ]
   };
 
-  useEffect(() => {
-    const mockData: TwitterToken[] = [
-      {
-        id: "1",
-        rank: 1,
-        icon: "B",
-        name: "Bitcoin",
-        symbol: "BTC",
-        tweetCount: 2847,
-        trend: 'up',
-        trendPercentage: 23.5
-      },
-      {
-        id: "2",
-        rank: 2,
-        icon: "E",
-        name: "Ethereum",
-        symbol: "ETH",
-        tweetCount: 1923,
-        trend: 'up',
-        trendPercentage: 15.2
-      },
-      {
-        id: "3",
-        rank: 3,
-        icon: "S",
-        name: "Solana",
-        symbol: "SOL",
-        tweetCount: 1456,
-        trend: 'up',
-        trendPercentage: 8.7
-      },
-      {
-        id: "4",
-        rank: 4,
-        icon: "P",
-        name: "Pepe",
-        symbol: "PEPE",
-        tweetCount: 987,
-        trend: 'up',
-        trendPercentage: 145.8
-      },
-      {
-        id: "5",
-        rank: 5,
-        icon: "D",
-        name: "Dogecoin",
-        symbol: "DOGE",
-        tweetCount: 734,
-        trend: 'up',
-        trendPercentage: 34.2
-      }
+  const generateRandomData = (): TwitterToken[] => {
+    const baseTokens = [
+      { id: "1", icon: "B", name: "Bitcoin", symbol: "BTC" },
+      { id: "2", icon: "E", name: "Ethereum", symbol: "ETH" },
+      { id: "3", icon: "S", name: "Solana", symbol: "SOL" },
+      { id: "4", icon: "P", name: "Pepe", symbol: "PEPE" },
+      { id: "5", icon: "D", name: "Dogecoin", symbol: "DOGE" }
     ];
 
-    setTwitterTokens(mockData);
+    return baseTokens.map((token, index) => ({
+      ...token,
+      rank: index + 1,
+      tweetCount: Math.floor(Math.random() * 2000) + 500,
+      trend: Math.random() > 0.5 ? 'up' : 'down' as 'up' | 'down',
+      trendPercentage: Math.random() * 200 + 5
+    }));
+  };
+
+  useEffect(() => {
+    // Initial data load
+    setTwitterTokens(generateRandomData());
+
+    // Set up interval to refresh data every second
+    const interval = setInterval(() => {
+      setTwitterTokens(generateRandomData());
+    }, 1000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
   }, [timeframe]);
 
   const handleAddToDashboard = () => {
@@ -239,7 +212,7 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
           {tokensToShow.map((token) => (
             <div 
               key={token.id} 
-              className="flex items-center justify-between p-2 rounded hover:bg-slate-700/30 transition-colors cursor-pointer group"
+              className="flex items-center justify-between p-2 rounded hover:bg-slate-700/30 transition-all duration-300 cursor-pointer group animate-fade-in"
               onClick={() => handleTokenClick(token)}
             >
               <div className="flex items-center space-x-3 flex-1">
@@ -250,7 +223,7 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <div className="text-white font-medium text-sm">${token.symbol}</div>
-                    <HoverCard openDelay={200} closeDelay={300}>
+                    <HoverCard openDelay={0} closeDelay={300}>
                       <HoverCardTrigger asChild>
                         <div className="text-blue-400 hover:text-blue-300 cursor-pointer">
                           <Twitter className="w-3 h-3" />
@@ -296,10 +269,12 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
               
               <div className="flex items-center gap-3">
                 <div className="text-right">
-                  <div className="text-white font-medium text-sm">{token.tweetCount.toLocaleString()}</div>
+                  <div className="text-white font-medium text-sm transition-all duration-500">{token.tweetCount.toLocaleString()}</div>
                   <div className="flex items-center justify-end gap-1">
-                    <span className="text-green-400 text-xs font-medium">
-                      {token.trendPercentage}%
+                    <span className={`text-xs font-medium transition-all duration-500 ${
+                      token.trend === 'up' ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {token.trend === 'up' ? '+' : ''}{token.trendPercentage.toFixed(1)}%
                     </span>
                     <span className="text-slate-400 text-xs">tweets</span>
                   </div>

@@ -20,61 +20,35 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
   const [walletActivities, setWalletActivities] = useState<WalletActivity[]>([]);
   const [showAllActivity, setShowAllActivity] = useState(false);
 
-  useEffect(() => {
-    const mockData: WalletActivity[] = [
-      {
-        id: "1",
-        icon: "F",
-        tokenName: "Frogolicious",
-        tokenSymbol: "FROG",
-        buyCount: 23,
-        totalAmountUSD: 145700,
-        totalAmountSOL: 234.5,
-        walletCount: 8
-      },
-      {
-        id: "2",
-        icon: "M",
-        tokenName: "MoonShot",
-        tokenSymbol: "MOON", 
-        buyCount: 18,
-        totalAmountUSD: 89300,
-        totalAmountSOL: 143.8,
-        walletCount: 5
-      },
-      {
-        id: "3",
-        icon: "D",
-        tokenName: "DiamondHands",
-        tokenSymbol: "DIAMOND",
-        buyCount: 31,
-        totalAmountUSD: 203400,
-        totalAmountSOL: 327.2,
-        walletCount: 12
-      },
-      {
-        id: "4",
-        icon: "R",
-        tokenName: "RocketFuel",
-        tokenSymbol: "ROCKET",
-        buyCount: 15,
-        totalAmountUSD: 67800,
-        totalAmountSOL: 109.2,
-        walletCount: 6
-      },
-      {
-        id: "5",
-        icon: "S",
-        tokenName: "StarToken",
-        tokenSymbol: "STAR",
-        buyCount: 42,
-        totalAmountUSD: 298500,
-        totalAmountSOL: 480.3,
-        walletCount: 18
-      }
+  const generateRandomWalletData = (): WalletActivity[] => {
+    const baseTokens = [
+      { id: "1", icon: "F", tokenName: "Frogolicious", tokenSymbol: "FROG" },
+      { id: "2", icon: "M", tokenName: "MoonShot", tokenSymbol: "MOON" },
+      { id: "3", icon: "D", tokenName: "DiamondHands", tokenSymbol: "DIAMOND" },
+      { id: "4", icon: "R", tokenName: "RocketFuel", tokenSymbol: "ROCKET" },
+      { id: "5", icon: "S", tokenName: "StarToken", tokenSymbol: "STAR" }
     ];
 
-    setWalletActivities(mockData);
+    return baseTokens.map((token) => ({
+      ...token,
+      buyCount: Math.floor(Math.random() * 50) + 10,
+      totalAmountUSD: Math.floor(Math.random() * 300000) + 50000,
+      totalAmountSOL: Math.floor(Math.random() * 500) + 100,
+      walletCount: Math.floor(Math.random() * 20) + 3
+    }));
+  };
+
+  useEffect(() => {
+    // Initial data load
+    setWalletActivities(generateRandomWalletData());
+
+    // Set up interval to refresh data every second
+    const interval = setInterval(() => {
+      setWalletActivities(generateRandomWalletData());
+    }, 1000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
   }, [timeframe]);
 
   const formatCurrency = (value: number) => {
@@ -134,7 +108,7 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
           {activitiesToShow.map((activity) => (
             <div 
               key={activity.id} 
-              className="p-3 rounded-lg hover:bg-slate-700/30 transition-colors cursor-pointer border border-slate-700/50 group"
+              className="p-3 rounded-lg hover:bg-slate-700/30 transition-all duration-300 cursor-pointer border border-slate-700/50 group animate-fade-in"
               onClick={() => handleActivityClick(activity)}
             >
               <div className="flex items-start justify-between mb-2">
@@ -162,18 +136,18 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div>
                   <div className="text-slate-400">Buys</div>
-                  <div className="text-white font-medium">{activity.buyCount}</div>
+                  <div className="text-white font-medium transition-all duration-500">{activity.buyCount}</div>
                 </div>
                 <div>
                   <div className="text-slate-400">Total Amount</div>
-                  <div className="text-white font-medium">{formatCurrency(activity.totalAmountUSD)}</div>
-                  <div className="text-slate-400 text-xs">{activity.totalAmountSOL} SOL</div>
+                  <div className="text-white font-medium transition-all duration-500">{formatCurrency(activity.totalAmountUSD)}</div>
+                  <div className="text-slate-400 text-xs transition-all duration-500">{activity.totalAmountSOL} SOL</div>
                 </div>
               </div>
               
               <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-700/50">
                 <div className="text-xs">
-                  <span className="text-white font-medium">{activity.walletCount} Wallets</span>
+                  <span className="text-white font-medium transition-all duration-500">{activity.walletCount} Wallets</span>
                 </div>
                 <Button 
                   variant="ghost" 
