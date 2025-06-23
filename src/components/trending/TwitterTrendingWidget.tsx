@@ -2,11 +2,12 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Plus, TrendingUp, TrendingDown, ExternalLink, Twitter } from "lucide-react";
+import { Plus, TrendingUp, TrendingDown, Twitter } from "lucide-react";
 
 interface TwitterToken {
   id: string;
+  rank: number;
+  icon: string;
   name: string;
   symbol: string;
   tweetCount: number;
@@ -18,39 +19,56 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
   const [twitterTokens, setTwitterTokens] = useState<TwitterToken[]>([]);
 
   useEffect(() => {
-    // Mock data based on timeframe
     const mockData: TwitterToken[] = [
       {
         id: "1",
-        name: "Frogolicious",
-        symbol: "FROG",
-        tweetCount: 1250,
+        rank: 1,
+        icon: "B",
+        name: "Bitcoin",
+        symbol: "BTC",
+        tweetCount: 2847,
         trend: 'up',
         trendPercentage: 23.5
       },
       {
         id: "2",
-        name: "Solana Doge",
-        symbol: "SOLDOGE",
-        tweetCount: 980,
+        rank: 2,
+        icon: "E",
+        name: "Ethereum",
+        symbol: "ETH",
+        tweetCount: 1923,
         trend: 'up',
         trendPercentage: 15.2
       },
       {
         id: "3",
-        name: "Solana Pepe",
-        symbol: "SPEPE",
-        tweetCount: 850,
-        trend: 'down',
-        trendPercentage: -8.7
+        rank: 3,
+        icon: "S",
+        name: "Solana",
+        symbol: "SOL",
+        tweetCount: 1456,
+        trend: 'up',
+        trendPercentage: 8.7
       },
       {
         id: "4",
-        name: "Banana Token",
-        symbol: "BANANA",
-        tweetCount: 720,
+        rank: 4,
+        icon: "P",
+        name: "Pepe",
+        symbol: "PEPE",
+        tweetCount: 987,
         trend: 'up',
         trendPercentage: 145.8
+      },
+      {
+        id: "5",
+        rank: 5,
+        icon: "D",
+        name: "Dogecoin",
+        symbol: "DOGE",
+        tweetCount: 734,
+        trend: 'up',
+        trendPercentage: 34.2
       }
     ];
 
@@ -59,33 +77,29 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
 
   return (
     <Card className="bg-slate-800/50 border-slate-700">
-      <CardHeader>
-        <CardTitle className="text-white flex items-center justify-between">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-white flex items-center justify-between text-base">
           <div className="flex items-center gap-2">
-            <Twitter className="w-5 h-5 text-blue-400" />
+            <Twitter className="w-4 h-4 text-blue-400" />
             Twitter Trending
           </div>
-          <Button size="sm" variant="ghost" className="text-yellow-500 hover:text-yellow-400">
-            <Plus className="w-4 h-4 mr-1" />
+          <Button size="sm" variant="ghost" className="text-yellow-500 hover:text-yellow-400 text-xs h-7">
+            <Plus className="w-3 h-3 mr-1" />
             Add to Dashboard
           </Button>
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-1">
-          <div className="grid grid-cols-3 gap-4 text-xs text-slate-400 uppercase tracking-wide pb-2 border-b border-slate-700">
-            <span>TOKEN</span>
-            <span className="text-right">TWEETS</span>
-            <span className="text-right">TREND</span>
-          </div>
-          {twitterTokens.map((token, index) => (
+      <CardContent className="pt-0">
+        <div className="space-y-2">
+          {twitterTokens.map((token) => (
             <div 
               key={token.id} 
-              className="grid grid-cols-3 gap-4 items-center p-2 rounded hover:bg-slate-700/30 transition-colors cursor-pointer group"
+              className="flex items-center justify-between p-2 rounded hover:bg-slate-700/30 transition-colors cursor-pointer"
             >
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-3">
+                <span className="text-slate-400 text-sm font-medium w-4">{token.rank}</span>
                 <div className="w-6 h-6 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                  {token.symbol[0]}
+                  {token.icon}
                 </div>
                 <div>
                   <div className="text-white font-medium text-sm">${token.symbol}</div>
@@ -94,21 +108,25 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
               </div>
               
               <div className="text-right">
-                <div className="text-white font-medium">{token.tweetCount.toLocaleString()}</div>
-              </div>
-              
-              <div className="text-right flex items-center justify-end gap-1">
-                {token.trend === 'up' ? (
-                  <TrendingUp className="w-3 h-3 text-green-400" />
-                ) : (
-                  <TrendingDown className="w-3 h-3 text-red-400" />
-                )}
-                <span className={`text-sm font-medium ${token.trend === 'up' ? 'text-green-400' : 'text-red-400'}`}>
-                  {Math.abs(token.trendPercentage).toFixed(0)}
-                </span>
+                <div className="text-white font-medium text-sm">{token.tweetCount.toLocaleString()}</div>
+                <div className="flex items-center justify-end gap-1">
+                  <span className="text-green-400 text-xs font-medium">
+                    {token.trendPercentage}%
+                  </span>
+                  <span className="text-slate-400 text-xs">tweets</span>
+                </div>
               </div>
             </div>
           ))}
+        </div>
+        
+        <div className="mt-4 pt-3 border-t border-slate-700">
+          <Button 
+            variant="ghost" 
+            className="w-full text-blue-400 hover:text-blue-300 text-sm h-8"
+          >
+            View All Twitter Trends
+          </Button>
         </div>
       </CardContent>
     </Card>
