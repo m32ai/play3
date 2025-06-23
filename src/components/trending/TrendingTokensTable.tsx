@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Search, Filter, ArrowUpDown, ArrowUp, ArrowDown, Copy, ExternalLink, X, RotateCcw, TrendingUp, Banana } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -37,16 +36,16 @@ interface SortConfig {
 }
 
 interface Filters {
-  priceMin: number;
-  priceMax: number;
-  volumeMin: number;
-  volumeMax: number;
-  marketCapMin: number;
-  marketCapMax: number;
-  liquidityMin: number;
-  liquidityMax: number;
-  txnsMin: number;
-  txnsMax: number;
+  priceMin: number | null;
+  priceMax: number | null;
+  volumeMin: number | null;
+  volumeMax: number | null;
+  marketCapMin: number | null;
+  marketCapMax: number | null;
+  liquidityMin: number | null;
+  liquidityMax: number | null;
+  txnsMin: number | null;
+  txnsMax: number | null;
 }
 
 const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyAmount: string }) => {
@@ -56,19 +55,18 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [showSearchHistory, setShowSearchHistory] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'volume', direction: 'desc' });
-  const [filters, setFilters] = useState<Filters>({
-    priceMin: 0,
-    priceMax: 10,
-    volumeMin: 0,
-    volumeMax: 10000000,
-    marketCapMin: 0,
-    marketCapMax: 1000000000,
-    liquidityMin: 0,
-    liquidityMax: 10000000,
-    txnsMin: 0,
-    txnsMax: 1000
+  const [activeFilters, setActiveFilters] = useState<Filters>({
+    priceMin: null,
+    priceMax: null,
+    volumeMin: null,
+    volumeMax: null,
+    marketCapMin: null,
+    marketCapMax: null,
+    liquidityMin: null,
+    liquidityMax: null,
+    txnsMin: null,
+    txnsMax: null
   });
-  const [activeFilters, setActiveFilters] = useState<Partial<Filters>>({});
 
   const generateRandomTokenData = (): Token[] => {
     const baseTokens = [
@@ -171,7 +169,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
 
     // Apply filters
     Object.entries(activeFilters).forEach(([key, value]) => {
-      if (value !== undefined) {
+      if (value !== null && value !== undefined) {
         const filterKey = key.replace('Min', '').replace('Max', '') as keyof Token;
         if (key.endsWith('Min')) {
           filtered = filtered.filter(token => (token[filterKey] as number) >= value);
@@ -240,11 +238,23 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
   };
 
   const clearAllFilters = () => {
-    setActiveFilters({});
+    setActiveFilters({
+      priceMin: null,
+      priceMax: null,
+      volumeMin: null,
+      volumeMax: null,
+      marketCapMin: null,
+      marketCapMax: null,
+      liquidityMin: null,
+      liquidityMax: null,
+      txnsMin: null,
+      txnsMax: null
+    });
     setSearchTerm("");
   };
 
-  const hasActiveFilters = Object.keys(activeFilters).length > 0 || searchTerm;
+  const hasActiveFilters = Object.values(activeFilters).some(value => value !== null) || searchTerm;
+  const activeFilterCount = Object.values(activeFilters).filter(value => value !== null).length;
 
   const handleTokenClick = (token: Token) => {
     window.open(`/token/${token.symbol}`, '_blank');
@@ -276,9 +286,9 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                   <Button size="sm" variant="ghost" className="text-slate-300 hover:text-white">
                     <Filter className="w-4 h-4 mr-1" />
                     Filters
-                    {Object.keys(activeFilters).length > 0 && (
+                    {activeFilterCount > 0 && (
                       <Badge variant="secondary" className="ml-2 bg-yellow-500 text-slate-900">
-                        {Object.keys(activeFilters).length}
+                        {activeFilterCount}
                       </Badge>
                     )}
                   </Button>
@@ -288,84 +298,140 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                     <SheetTitle className="text-white">Filter Tokens</SheetTitle>
                   </SheetHeader>
                   <div className="space-y-6 mt-6">
+                    {/* Price Filter */}
                     <div>
-                      <Label>Price Range</Label>
-                      <div className="space-y-2 mt-2">
-                        <Slider
-                          value={[activeFilters.priceMin || filters.priceMin, activeFilters.priceMax || filters.priceMax]}
-                          onValueChange={([min, max]) => setActiveFilters(prev => ({ ...prev, priceMin: min, priceMax: max }))}
-                          max={filters.priceMax}
-                          step={0.0001}
-                          className="w-full"
+                      <Label className="text-white">Price Range</Label>
+                      <div className="flex gap-2 mt-2">
+                        <Input 
+                          placeholder="Min Price" 
+                          type="number"
+                          step="0.000001"
+                          value={activeFilters.priceMin || ''} 
+                          onChange={(e) => setActiveFilters(prev => ({ 
+                            ...prev, 
+                            priceMin: e.target.value ? parseFloat(e.target.value) : null 
+                          }))}
+                          className="bg-slate-700 border-slate-600 text-white"
                         />
-                        <div className="flex gap-2">
-                          <Input 
-                            placeholder="Min" 
-                            value={activeFilters.priceMin || ''} 
-                            onChange={(e) => setActiveFilters(prev => ({ ...prev, priceMin: parseFloat(e.target.value) || 0 }))}
-                            className="bg-slate-700 border-slate-600"
-                          />
-                          <Input 
-                            placeholder="Max" 
-                            value={activeFilters.priceMax || ''} 
-                            onChange={(e) => setActiveFilters(prev => ({ ...prev, priceMax: parseFloat(e.target.value) || filters.priceMax }))}
-                            className="bg-slate-700 border-slate-600"
-                          />
-                        </div>
+                        <Input 
+                          placeholder="Max Price" 
+                          type="number"
+                          step="0.000001"
+                          value={activeFilters.priceMax || ''} 
+                          onChange={(e) => setActiveFilters(prev => ({ 
+                            ...prev, 
+                            priceMax: e.target.value ? parseFloat(e.target.value) : null 
+                          }))}
+                          className="bg-slate-700 border-slate-600 text-white"
+                        />
                       </div>
                     </div>
 
+                    {/* Volume Filter */}
                     <div>
-                      <Label>Volume Range</Label>
-                      <div className="space-y-2 mt-2">
-                        <Slider
-                          value={[activeFilters.volumeMin || filters.volumeMin, activeFilters.volumeMax || filters.volumeMax]}
-                          onValueChange={([min, max]) => setActiveFilters(prev => ({ ...prev, volumeMin: min, volumeMax: max }))}
-                          max={filters.volumeMax}
-                          step={1000}
-                          className="w-full"
+                      <Label className="text-white">Volume Range ($)</Label>
+                      <div className="flex gap-2 mt-2">
+                        <Input 
+                          placeholder="Min Volume" 
+                          type="number"
+                          value={activeFilters.volumeMin || ''} 
+                          onChange={(e) => setActiveFilters(prev => ({ 
+                            ...prev, 
+                            volumeMin: e.target.value ? parseFloat(e.target.value) : null 
+                          }))}
+                          className="bg-slate-700 border-slate-600 text-white"
                         />
-                        <div className="flex gap-2">
-                          <Input 
-                            placeholder="Min Volume" 
-                            value={activeFilters.volumeMin || ''} 
-                            onChange={(e) => setActiveFilters(prev => ({ ...prev, volumeMin: parseFloat(e.target.value) || 0 }))}
-                            className="bg-slate-700 border-slate-600"
-                          />
-                          <Input 
-                            placeholder="Max Volume" 
-                            value={activeFilters.volumeMax || ''} 
-                            onChange={(e) => setActiveFilters(prev => ({ ...prev, volumeMax: parseFloat(e.target.value) || filters.volumeMax }))}
-                            className="bg-slate-700 border-slate-600"
-                          />
-                        </div>
+                        <Input 
+                          placeholder="Max Volume" 
+                          type="number"
+                          value={activeFilters.volumeMax || ''} 
+                          onChange={(e) => setActiveFilters(prev => ({ 
+                            ...prev, 
+                            volumeMax: e.target.value ? parseFloat(e.target.value) : null 
+                          }))}
+                          className="bg-slate-700 border-slate-600 text-white"
+                        />
                       </div>
                     </div>
 
+                    {/* Market Cap Filter */}
                     <div>
-                      <Label>Market Cap Range</Label>
-                      <div className="space-y-2 mt-2">
-                        <Slider
-                          value={[activeFilters.marketCapMin || filters.marketCapMin, activeFilters.marketCapMax || filters.marketCapMax]}
-                          onValueChange={([min, max]) => setActiveFilters(prev => ({ ...prev, marketCapMin: min, marketCapMax: max }))}
-                          max={filters.marketCapMax}
-                          step={10000}
-                          className="w-full"
+                      <Label className="text-white">Market Cap Range ($)</Label>
+                      <div className="flex gap-2 mt-2">
+                        <Input 
+                          placeholder="Min Market Cap" 
+                          type="number"
+                          value={activeFilters.marketCapMin || ''} 
+                          onChange={(e) => setActiveFilters(prev => ({ 
+                            ...prev, 
+                            marketCapMin: e.target.value ? parseFloat(e.target.value) : null 
+                          }))}
+                          className="bg-slate-700 border-slate-600 text-white"
                         />
-                        <div className="flex gap-2">
-                          <Input 
-                            placeholder="Min Market Cap" 
-                            value={activeFilters.marketCapMin || ''} 
-                            onChange={(e) => setActiveFilters(prev => ({ ...prev, marketCapMin: parseFloat(e.target.value) || 0 }))}
-                            className="bg-slate-700 border-slate-600"
-                          />
-                          <Input 
-                            placeholder="Max Market Cap" 
-                            value={activeFilters.marketCapMax || ''} 
-                            onChange={(e) => setActiveFilters(prev => ({ ...prev, marketCapMax: parseFloat(e.target.value) || filters.marketCapMax }))}
-                            className="bg-slate-700 border-slate-600"
-                          />
-                        </div>
+                        <Input 
+                          placeholder="Max Market Cap" 
+                          type="number"
+                          value={activeFilters.marketCapMax || ''} 
+                          onChange={(e) => setActiveFilters(prev => ({ 
+                            ...prev, 
+                            marketCapMax: e.target.value ? parseFloat(e.target.value) : null 
+                          }))}
+                          className="bg-slate-700 border-slate-600 text-white"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Liquidity Filter */}
+                    <div>
+                      <Label className="text-white">Liquidity Range ($)</Label>
+                      <div className="flex gap-2 mt-2">
+                        <Input 
+                          placeholder="Min Liquidity" 
+                          type="number"
+                          value={activeFilters.liquidityMin || ''} 
+                          onChange={(e) => setActiveFilters(prev => ({ 
+                            ...prev, 
+                            liquidityMin: e.target.value ? parseFloat(e.target.value) : null 
+                          }))}
+                          className="bg-slate-700 border-slate-600 text-white"
+                        />
+                        <Input 
+                          placeholder="Max Liquidity" 
+                          type="number"
+                          value={activeFilters.liquidityMax || ''} 
+                          onChange={(e) => setActiveFilters(prev => ({ 
+                            ...prev, 
+                            liquidityMax: e.target.value ? parseFloat(e.target.value) : null 
+                          }))}
+                          className="bg-slate-700 border-slate-600 text-white"
+                        />
+                      </div>
+                    </div>
+
+                    {/* TXNs Filter */}
+                    <div>
+                      <Label className="text-white">Transactions Range</Label>
+                      <div className="flex gap-2 mt-2">
+                        <Input 
+                          placeholder="Min TXNs" 
+                          type="number"
+                          value={activeFilters.txnsMin || ''} 
+                          onChange={(e) => setActiveFilters(prev => ({ 
+                            ...prev, 
+                            txnsMin: e.target.value ? parseInt(e.target.value) : null 
+                          }))}
+                          className="bg-slate-700 border-slate-600 text-white"
+                        />
+                        <Input 
+                          placeholder="Max TXNs" 
+                          type="number"
+                          value={activeFilters.txnsMax || ''} 
+                          onChange={(e) => setActiveFilters(prev => ({ 
+                            ...prev, 
+                            txnsMax: e.target.value ? parseInt(e.target.value) : null 
+                          }))}
+                          className="bg-slate-700 border-slate-600 text-white"
+                        />
                       </div>
                     </div>
                   </div>
