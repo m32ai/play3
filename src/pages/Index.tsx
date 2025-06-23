@@ -60,7 +60,7 @@ const Index = () => {
               <h1 className="text-xl font-bold text-white">BananaGun</h1>
             </div>
             <Button 
-              onClick={() => navigate('/trending')}
+              onClick={() => navigate('/')}
               className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-slate-900 font-semibold"
             >
               Launch Dashboard
@@ -81,7 +81,7 @@ const Index = () => {
             Discover momentum plays faster with confidence.
           </p>
           <Button 
-            onClick={() => navigate('/trending')}
+            onClick={() => navigate('/')}
             size="lg"
             className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-slate-900 font-semibold text-lg px-8 py-3"
           >
@@ -110,7 +110,7 @@ const Index = () => {
               Join thousands of traders using BananaGun to spot trending tokens before the crowd.
             </p>
             <Button 
-              onClick={() => navigate('/trending')}
+              onClick={() => navigate('/')}
               size="lg"
               className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-slate-900 font-semibold"
             >

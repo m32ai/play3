@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface WalletActivity {
   id: string;
@@ -16,6 +16,7 @@ interface WalletActivity {
 }
 
 const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
+  const navigate = useNavigate();
   const [walletActivities, setWalletActivities] = useState<WalletActivity[]>([]);
   const [showAllActivity, setShowAllActivity] = useState(false);
 
@@ -94,7 +95,7 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
 
   const handleViewAllActivity = () => {
     console.log('View All Wallet Activity clicked');
-    setShowAllActivity(!showAllActivity);
+    navigate('/wallet-activity');
   };
 
   const handleActivityClick = (activity: WalletActivity) => {

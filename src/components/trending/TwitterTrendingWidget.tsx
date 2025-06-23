@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useNavigate } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Twitter } from "lucide-react";
@@ -26,6 +26,7 @@ interface Tweet {
 }
 
 const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
+  const navigate = useNavigate();
   const [twitterTokens, setTwitterTokens] = useState<TwitterToken[]>([]);
   const [showAllTrends, setShowAllTrends] = useState(false);
 
@@ -197,7 +198,7 @@ const TwitterTrendingWidget = ({ timeframe }: { timeframe: string }) => {
 
   const handleViewAllTrends = () => {
     console.log('View All Twitter Trends clicked');
-    setShowAllTrends(!showAllTrends);
+    navigate('/twitter-trends');
   };
 
   const handleTokenClick = (token: TwitterToken) => {
