@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users } from "lucide-react";
+import { Users, Banana } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface WalletActivity {
   id: string;
@@ -15,7 +16,7 @@ interface WalletActivity {
   walletCount: number;
 }
 
-const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
+const TrackedWalletActivity = ({ timeframe, buyAmount }: { timeframe: string; buyAmount: string }) => {
   const navigate = useNavigate();
   const [walletActivities, setWalletActivities] = useState<WalletActivity[]>([]);
   const [showAllActivity, setShowAllActivity] = useState(false);
@@ -85,86 +86,96 @@ const TrackedWalletActivity = ({ timeframe }: { timeframe: string }) => {
   const activitiesToShow = showAllActivity ? walletActivities : walletActivities.slice(0, 3);
 
   return (
-    <Card className="bg-slate-800/50 border-slate-700">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-white flex items-center gap-2 text-base">
-          <Users className="w-4 h-4 text-purple-400" />
-          Tracked Wallet Buys
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="space-y-3">
-          {activitiesToShow.map((activity) => (
-            <div 
-              key={activity.id} 
-              className="p-3 rounded-lg hover:bg-slate-700/30 transition-all duration-300 cursor-pointer border border-slate-700/50 group animate-fade-in"
-              onClick={() => handleActivityClick(activity)}
-            >
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center space-x-3">
-                  <div className="w-6 h-6 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                    {activity.icon}
+    <TooltipProvider>
+      <Card className="bg-slate-800/50 border-slate-700">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-white flex items-center gap-2 text-base">
+            <Users className="w-4 h-4 text-purple-400" />
+            Tracked Wallet Buys
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="space-y-3">
+            {activitiesToShow.map((activity) => (
+              <div 
+                key={activity.id} 
+                className="p-3 rounded-lg hover:bg-slate-700/30 transition-all duration-300 cursor-pointer border border-slate-700/50 group animate-fade-in"
+                onClick={() => handleActivityClick(activity)}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-6 h-6 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                      {activity.icon}
+                    </div>
+                    <div>
+                      <div className="text-white font-medium text-sm">{activity.tokenName}</div>
+                      <div className="text-slate-400 text-xs">${activity.tokenSymbol}</div>
+                    </div>
+                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        size="sm" 
+                        className="bg-yellow-500 hover:bg-yellow-600 text-black font-medium text-xs h-7 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleQuickBuy(activity);
+                        }}
+                      >
+                        <Banana className="w-3 h-3 mr-1" />
+                        {buyAmount}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Buy {buyAmount} SOL</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <div className="text-slate-400">Buys</div>
+                    <div className="text-white font-medium transition-all duration-500">{activity.buyCount}</div>
                   </div>
                   <div>
-                    <div className="text-white font-medium text-sm">{activity.tokenName}</div>
-                    <div className="text-slate-400 text-xs">${activity.tokenSymbol}</div>
+                    <div className="text-slate-400">Total Amount</div>
+                    <div className="text-white font-medium transition-all duration-500">{formatCurrency(activity.totalAmountUSD)}</div>
+                    <div className="text-slate-400 text-xs transition-all duration-500">{activity.totalAmountSOL} SOL</div>
                   </div>
                 </div>
-                <Button 
-                  size="sm" 
-                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-medium text-xs h-7 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleQuickBuy(activity);
-                  }}
-                >
-                  Buy
-                </Button>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4 text-xs">
-                <div>
-                  <div className="text-slate-400">Buys</div>
-                  <div className="text-white font-medium transition-all duration-500">{activity.buyCount}</div>
-                </div>
-                <div>
-                  <div className="text-slate-400">Total Amount</div>
-                  <div className="text-white font-medium transition-all duration-500">{formatCurrency(activity.totalAmountUSD)}</div>
-                  <div className="text-slate-400 text-xs transition-all duration-500">{activity.totalAmountSOL} SOL</div>
+                
+                <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-700/50">
+                  <div className="text-xs">
+                    <span className="text-white font-medium transition-all duration-500">{activity.walletCount} Wallets</span>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-blue-400 hover:text-blue-300 text-xs h-6 px-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewWallets(activity);
+                    }}
+                  >
+                    View Wallets
+                  </Button>
                 </div>
               </div>
-              
-              <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-700/50">
-                <div className="text-xs">
-                  <span className="text-white font-medium transition-all duration-500">{activity.walletCount} Wallets</span>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-blue-400 hover:text-blue-300 text-xs h-6 px-2"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewWallets(activity);
-                  }}
-                >
-                  View Wallets
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        <div className="mt-4 pt-3 border-t border-slate-700">
-          <Button 
-            variant="ghost" 
-            className="w-full text-blue-400 hover:text-blue-300 text-sm h-8"
-            onClick={handleViewAllActivity}
-          >
-            {showAllActivity ? 'Show Less' : 'View All Wallet Activity'}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+            ))}
+          </div>
+          
+          <div className="mt-4 pt-3 border-t border-slate-700">
+            <Button 
+              variant="ghost" 
+              className="w-full text-blue-400 hover:text-blue-300 text-sm h-8"
+              onClick={handleViewAllActivity}
+            >
+              {showAllActivity ? 'Show Less' : 'View All Wallet Activity'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   );
 };
 
