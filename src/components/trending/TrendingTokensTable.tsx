@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Filter, ArrowUpDown, ArrowUp, ArrowDown, Copy, ExternalLink, X, RotateCcw, TrendingUp, Banana, Users, Code, Eye, Zap, Target, Flame } from "lucide-react";
+import { Search, Filter, ArrowUpDown, ArrowUp, ArrowDown, Copy, ExternalLink, X, RotateCcw, TrendingUp, Banana, Users, Code, Eye, Zap, Target, Flame, Shield } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -430,6 +430,33 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
       likes: Math.floor(Math.random() * 1000) + 10,
       retweets: Math.floor(Math.random() * 500) + 5,
     }));
+  };
+
+  const getSecurityScore = (token: Token) => {
+    let score = 8; // Start with perfect score
+    
+    // Deduct points based on risk factors
+    if ((token.topHoldersPercent || 0) > 40) score -= 2;
+    else if ((token.topHoldersPercent || 0) > 30) score -= 1;
+    
+    if ((token.devHoldings || 0) > 10) score -= 2;
+    else if ((token.devHoldings || 0) > 5) score -= 1;
+    
+    if ((token.insiderHolding || 0) > 20) score -= 2;
+    else if ((token.insiderHolding || 0) > 15) score -= 1;
+    
+    if ((token.bundlers || 0) > 15) score -= 1;
+    if ((token.snipersPercent || 0) > 10) score -= 1;
+    if (!token.lpBurned) score -= 1;
+    
+    return Math.max(0, score);
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 7) return 'text-green-400';
+    if (score >= 5) return 'text-yellow-400';
+    if (score >= 3) return 'text-orange-400';
+    return 'text-red-400';
   };
 
   const getSecurityIndicators = (token: Token) => {
@@ -1051,7 +1078,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                         className="h-5 w-5 p-0 text-slate-400 hover:text-blue-400"
                                       >
                                         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                                          <path d="M18.244 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
                                         </svg>
                                       </Button>
                                     </HoverCardTrigger>
@@ -1146,30 +1173,70 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1">
-                          {getSecurityIndicators(token).map((indicator, index) => (
-                            <Tooltip key={index}>
-                              <TooltipTrigger asChild>
-                                <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${
-                                  indicator.isRisk 
-                                    ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
-                                    : 'bg-green-500/20 text-green-400 border border-green-500/30'
-                                }`}>
-                                  <indicator.icon className="w-3 h-3" />
-                                  {indicator.isBoolean 
-                                    ? (indicator.value > 0 ? '✓' : '✗')
-                                    : `${indicator.value}%`
-                                  }
+                        <div className="flex items-center gap-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className={`flex items-center gap-1 px-2 py-1 rounded text-sm font-bold ${
+                                getSecurityScore(token) >= 7 
+                                  ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                                  : getSecurityScore(token) >= 5
+                                  ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                                  : getSecurityScore(token) >= 3
+                                  ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                                  : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                              }`}>
+                                <Shield className="w-3 h-3" />
+                                {getSecurityScore(token)}/8
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-slate-800 border-slate-700 text-white max-w-xs">
+                              <div className="space-y-2">
+                                <div className="font-medium text-center mb-2">Security Analysis</div>
+                                <div className="text-xs space-y-1">
+                                  <div className="flex justify-between">
+                                    <span>Dev Wallet:</span>
+                                    <span className={token.devHoldings && token.devHoldings > 10 ? 'text-red-400' : 'text-green-400'}>
+                                      {token.devHoldings || 0}%
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Insider:</span>
+                                    <span className={token.insiderHolding && token.insiderHolding > 20 ? 'text-red-400' : 'text-green-400'}>
+                                      {token.insiderHolding || 0}%
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Bundle:</span>
+                                    <span className={token.bundlers && token.bundlers > 15 ? 'text-red-400' : 'text-green-400'}>
+                                      {token.bundlers || 0}%
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Sniper Wallets:</span>
+                                    <span className={token.snipersPercent && token.snipersPercent > 10 ? 'text-red-400' : 'text-green-400'}>
+                                      {token.snipersPercent || 0}%
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Bot Wallets:</span>
+                                    <span className="text-green-400">0.5%</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Top 10 Holders:</span>
+                                    <span className={token.topHoldersPercent && token.topHoldersPercent > 40 ? 'text-red-400' : 'text-green-400'}>
+                                      {token.topHoldersPercent || 0}%
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>LP Burned:</span>
+                                    <span className={token.lpBurned ? 'text-green-400' : 'text-red-400'}>
+                                      {token.lpBurned ? 'Yes' : 'No'}
+                                    </span>
+                                  </div>
                                 </div>
-                              </TooltipTrigger>
-                              <TooltipContent className="bg-slate-800 border-slate-700 text-white">
-                                <div className="font-medium">{indicator.label}</div>
-                                <div className="text-sm text-slate-300 mt-1 max-w-xs">
-                                  {indicator.tooltip}
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          ))}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
                         </div>
                       </TableCell>
                       <TableCell className="sticky right-0 bg-slate-800/90 backdrop-blur-sm border-l border-slate-700">
