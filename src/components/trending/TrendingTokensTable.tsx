@@ -103,6 +103,8 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [showSearchHistory, setShowSearchHistory] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'volume', direction: 'desc' });
+  const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
+  const [frozenTokenData, setFrozenTokenData] = useState<Record<string, Token>>({});
   const [activeFilters, setActiveFilters] = useState<Filters>({
     priceMin: null,
     priceMax: null,
@@ -288,12 +290,44 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
     // Set up interval to refresh data every second
     const interval = setInterval(() => {
       const newTokens = generateRandomTokenData();
-      setTokens(newTokens);
+      
+      // Update tokens but preserve frozen data for hovered rows
+      setTokens(prevTokens => {
+        return newTokens.map(newToken => {
+          // If this token is being hovered, keep the frozen data
+          if (hoveredRowId === newToken.id && frozenTokenData[newToken.id]) {
+            return frozenTokenData[newToken.id];
+          }
+          return newToken;
+        });
+      });
     }, 1000);
 
     // Cleanup interval on component unmount
     return () => clearInterval(interval);
-  }, [timeframe]);
+  }, [timeframe, hoveredRowId, frozenTokenData]);
+
+  // Handle row hover
+  const handleRowMouseEnter = (token: Token) => {
+    setHoveredRowId(token.id);
+    // Freeze the current data for this token
+    setFrozenTokenData(prev => ({
+      ...prev,
+      [token.id]: { ...token }
+    }));
+  };
+
+  const handleRowMouseLeave = (tokenId: string) => {
+    setHoveredRowId(null);
+    // Remove frozen data after a short delay to allow for smooth transitions
+    setTimeout(() => {
+      setFrozenTokenData(prev => {
+        const newFrozenData = { ...prev };
+        delete newFrozenData[tokenId];
+        return newFrozenData;
+      });
+    }, 100);
+  };
 
   // Pagination effect
   useEffect(() => {
@@ -1194,285 +1228,300 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {paginatedTokens.map((token) => (
-                      <TableRow 
-                        key={token.id} 
-                        className="border-slate-700 hover:bg-slate-700/50 cursor-pointer animate-fade-in"
-                        onClick={() => handleTokenClick(token)}
-                      >
-                        <TableCell>
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                              {token.symbol[0]}
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-white font-medium">${token.symbol}</span>
-                                <span className="text-slate-400">{token.name}</span>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => copyToClipboard(token.contractAddress)}
-                                  className="h-6 w-6 p-0 text-slate-400 hover:text-white"
-                                >
-                                  <Copy className="w-3 h-3" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => token.socials.website && openSocialLink(token.socials.website)}
-                                  className="h-6 w-6 p-0 text-slate-400 hover:text-blue-400"
-                                  disabled={!token.socials.website}
-                                >
-                                  <ExternalLink className="w-3 h-3" />
-                                </Button>
+                    {paginatedTokens.map((token) => {
+                      // Use frozen data if available, otherwise use current token data
+                      const displayToken = frozenTokenData[token.id] || token;
+                      const isHovered = hoveredRowId === token.id;
+                      
+                      return (
+                        <TableRow 
+                          key={token.id} 
+                          className={`border-slate-700 hover:bg-slate-700/50 cursor-pointer animate-fade-in transition-all duration-200 ${
+                            isHovered ? 'bg-slate-700/70 shadow-lg ring-1 ring-yellow-500/20' : ''
+                          }`}
+                          onClick={() => handleTokenClick(displayToken)}
+                          onMouseEnter={() => handleRowMouseEnter(token)}
+                          onMouseLeave={() => handleRowMouseLeave(token.id)}
+                        >
+                          <TableCell>
+                            <div className="flex items-center space-x-3">
+                              <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                                {displayToken.symbol[0]}
                               </div>
-                              <div className="flex items-center gap-1 mt-1">
-                                <div className="text-xs text-slate-500">{timeframe}</div>
-                                <div className="flex items-center gap-1 ml-2">
-                                  {/* Discord */}
-                                  {token.socials.discord && (
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          onClick={() => openSocialLink(token.socials.discord!)}
-                                          className="h-5 w-5 p-0 text-slate-400 hover:text-purple-400"
-                                        >
-                                          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8731-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.157 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/>
-                                          </svg>
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>Join Discord</p>
-                                      </TooltipContent>
-                                    </Tooltip>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-white font-medium">${displayToken.symbol}</span>
+                                  <span className="text-slate-400">{displayToken.name}</span>
+                                  {isHovered && (
+                                    <Badge variant="secondary" className="text-xs bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                                      FROZEN
+                                    </Badge>
                                   )}
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => copyToClipboard(displayToken.contractAddress)}
+                                    className="h-6 w-6 p-0 text-slate-400 hover:text-white"
+                                  >
+                                    <Copy className="w-3 h-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => displayToken.socials.website && openSocialLink(displayToken.socials.website)}
+                                    className="h-6 w-6 p-0 text-slate-400 hover:text-blue-400"
+                                    disabled={!displayToken.socials.website}
+                                  >
+                                    <ExternalLink className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                                <div className="flex items-center gap-1 mt-1">
+                                  <div className="text-xs text-slate-500">{timeframe}</div>
+                                  <div className="flex items-center gap-1 ml-2">
+                                    {/* Discord */}
+                                    {displayToken.socials.discord && (
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => openSocialLink(displayToken.socials.discord!)}
+                                            className="h-5 w-5 p-0 text-slate-400 hover:text-purple-400"
+                                          >
+                                            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                                              <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8731-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.157 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/>
+                                            </svg>
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>Join Discord</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    )}
 
-                                  {/* Telegram */}
-                                  {token.socials.telegram && (
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          onClick={() => openSocialLink(token.socials.telegram!)}
-                                          className="h-5 w-5 p-0 text-slate-400 hover:text-blue-500"
-                                        >
-                                          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 0 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-                                          </svg>
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>Join Telegram</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  )}
+                                    {/* Telegram */}
+                                    {displayToken.socials.telegram && (
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => openSocialLink(displayToken.socials.telegram!)}
+                                            className="h-5 w-5 p-0 text-slate-400 hover:text-blue-500"
+                                          >
+                                            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                                              <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 0 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                                            </svg>
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>Join Telegram</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    )}
 
-                                  {/* X (Twitter) with hover card for tweets */}
-                                  {token.socials.twitter && (
-                                    <HoverCard>
-                                      <HoverCardTrigger asChild>
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          onClick={() => openSocialLink(token.socials.twitter!)}
-                                          className="h-5 w-5 p-0 text-slate-400 hover:text-white"
-                                        >
-                                          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/>
-                                          </svg>
-                                        </Button>
-                                      </HoverCardTrigger>
-                                      <HoverCardContent className="w-80 bg-slate-800 border-slate-700 text-white">
-                                        <div className="space-y-3">
-                                          <h4 className="text-sm font-semibold text-white">Latest Posts about ${token.symbol}</h4>
-                                          {generateMockTweets(token.symbol).map((tweet) => (
-                                            <div key={tweet.id} className="border-b border-slate-700 pb-3 last:border-b-0">
-                                              <div className="flex items-start space-x-2">
-                                                <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black text-xs font-bold">
-                                                  {tweet.author[1].toUpperCase()}
-                                                </div>
-                                                <div className="flex-1">
-                                                  <div className="flex items-center space-x-2 mb-1">
-                                                    <span className="text-white text-sm font-medium">{tweet.author}</span>
-                                                    <span className="text-slate-500 text-xs">•</span>
-                                                    <span className="text-slate-500 text-xs">{tweet.timestamp}</span>
+                                    {/* X (Twitter) with hover card for tweets */}
+                                    {displayToken.socials.twitter && (
+                                      <HoverCard>
+                                        <HoverCardTrigger asChild>
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => openSocialLink(displayToken.socials.twitter!)}
+                                            className="h-5 w-5 p-0 text-slate-400 hover:text-white"
+                                          >
+                                            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                                              <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/>
+                                            </svg>
+                                          </Button>
+                                        </HoverCardTrigger>
+                                        <HoverCardContent className="w-80 bg-slate-800 border-slate-700 text-white">
+                                          <div className="space-y-3">
+                                            <h4 className="text-sm font-semibold text-white">Latest Posts about ${displayToken.symbol}</h4>
+                                            {generateMockTweets(displayToken.symbol).map((tweet) => (
+                                              <div key={tweet.id} className="border-b border-slate-700 pb-3 last:border-b-0">
+                                                <div className="flex items-start space-x-2">
+                                                  <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black text-xs font-bold">
+                                                    {tweet.author[1].toUpperCase()}
                                                   </div>
-                                                  <p className="text-sm text-slate-300 mb-2">{tweet.content}</p>
-                                                  <div className="flex items-center space-x-4 text-xs text-slate-500">
-                                                    <span>❤️ {tweet.likes}</span>
-                                                    <span>🔄 {tweet.retweets}</span>
+                                                  <div className="flex-1">
+                                                    <div className="flex items-center space-x-2 mb-1">
+                                                      <span className="text-white text-sm font-medium">{tweet.author}</span>
+                                                      <span className="text-slate-500 text-xs">•</span>
+                                                      <span className="text-slate-500 text-xs">{tweet.timestamp}</span>
+                                                    </div>
+                                                    <p className="text-sm text-slate-300 mb-2">{tweet.content}</p>
+                                                    <div className="flex items-center space-x-4 text-xs text-slate-500">
+                                                      <span>❤️ {tweet.likes}</span>
+                                                      <span>🔄 {tweet.retweets}</span>
+                                                    </div>
                                                   </div>
                                                 </div>
                                               </div>
+                                            ))}
+                                            <div className="text-center">
+                                              <Button 
+                                                size="sm" 
+                                                variant="outline" 
+                                                className="text-white border-white hover:bg-white hover:text-black"
+                                                onClick={() => openSocialLink(displayToken.socials.twitter!)}
+                                              >
+                                                View more on X
+                                              </Button>
                                             </div>
-                                          ))}
-                                          <div className="text-center">
-                                            <Button 
-                                              size="sm" 
-                                              variant="outline" 
-                                              className="text-white border-white hover:bg-white hover:text-black"
-                                              onClick={() => openSocialLink(token.socials.twitter!)}
-                                            >
-                                              View more on X
-                                            </Button>
                                           </div>
-                                        </div>
-                                      </HoverCardContent>
-                                    </HoverCard>
-                                  )}
+                                        </HoverCardContent>
+                                      </HoverCard>
+                                    )}
 
-                                  {/* Custom link (Solscan, Website, etc.) */}
-                                  {(token.socials.website || token.contractAddress) && (
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          onClick={() => {
-                                            const url = token.socials.website || `https://solscan.io/token/${token.contractAddress}`;
-                                            openSocialLink(url);
-                                          }}
-                                          className="h-5 w-5 p-0 text-slate-400 hover:text-green-400"
-                                        >
-                                          <Globe className="w-3 h-3" />
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>{token.socials.website ? 'Visit Website' : 'View on Solscan'}</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="text-white font-medium transition-all duration-500">{formatPrice(token.price)}</div>
-                            <div className={`text-sm flex items-center gap-1 font-medium transition-all duration-500 ${token.priceChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                              {token.priceChange >= 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
-                              {token.priceChange >= 0 ? '+' : ''}{token.priceChange.toFixed(2)}%
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="text-white font-medium transition-all duration-500">{formatCurrency(token.marketCap)}</div>
-                            <div className={`text-sm font-medium transition-all duration-500 ${token.priceChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                              {token.priceChange >= 0 ? '+' : ''}{token.priceChange.toFixed(2)}%
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-white font-medium transition-all duration-500">{formatCurrency(token.liquidity)}</TableCell>
-                        <TableCell className="text-white font-medium transition-all duration-500">{formatCurrency(token.volume)}</TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="text-white font-medium transition-all duration-500">{token.transactions.toLocaleString()}</div>
-                            <div className="flex items-center gap-1 mt-1">
-                              <div className="flex-1 bg-slate-600 rounded-full h-2">
-                                <div 
-                                  className="bg-green-500 h-2 rounded-full transition-all duration-500" 
-                                  style={{ width: `${(token.buyTxns / token.transactions) * 100}%` }}
-                                />
-                              </div>
-                              <span className="text-xs text-slate-400 transition-all duration-500">
-                                {token.buyTxns} / {token.sellTxns}
-                              </span>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className={`flex items-center gap-1 px-2 py-1 rounded text-sm font-bold ${
-                                  getSecurityScore(token) >= 7 
-                                    ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                                    : getSecurityScore(token) >= 5
-                                    ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                                    : getSecurityScore(token) >= 3
-                                    ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                                    : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                                }`}>
-                                  <Shield className="w-3 h-3" />
-                                  {getSecurityScore(token)}/8
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent className="bg-slate-800 border-slate-700 text-white max-w-xs">
-                                <div className="space-y-2">
-                                  <div className="font-medium text-center mb-2">Security Analysis</div>
-                                  <div className="text-xs space-y-1">
-                                    <div className="flex justify-between">
-                                      <span>Dev Wallet:</span>
-                                      <span className={token.devHoldings && token.devHoldings > 10 ? 'text-red-400' : 'text-green-400'}>
-                                        {token.devHoldings || 0}%
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span>Insider:</span>
-                                      <span className={token.insiderHolding && token.insiderHolding > 20 ? 'text-red-400' : 'text-green-400'}>
-                                        {token.insiderHolding || 0}%
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span>Bundle:</span>
-                                      <span className={token.bundlers && token.bundlers > 15 ? 'text-red-400' : 'text-green-400'}>
-                                        {token.bundlers || 0}%
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span>Sniper Wallets:</span>
-                                      <span className={token.snipersPercent && token.snipersPercent > 10 ? 'text-red-400' : 'text-green-400'}>
-                                        {token.snipersPercent || 0}%
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span>Bot Wallets:</span>
-                                      <span className="text-green-400">0.5%</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span>Top 10 Holders:</span>
-                                      <span className={token.topHoldersPercent && token.topHoldersPercent > 40 ? 'text-red-400' : 'text-green-400'}>
-                                        {token.topHoldersPercent || 0}%
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span>LP Burned:</span>
-                                      <span className={token.lpBurned ? 'text-green-400' : 'text-red-400'}>
-                                        {token.lpBurned ? 'Yes' : 'No'}
-                                      </span>
-                                    </div>
+                                    {/* Custom link (Solscan, Website, etc.) */}
+                                    {(displayToken.socials.website || displayToken.contractAddress) && (
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => {
+                                              const url = displayToken.socials.website || `https://solscan.io/token/${displayToken.contractAddress}`;
+                                              openSocialLink(url);
+                                            }}
+                                            className="h-5 w-5 p-0 text-slate-400 hover:text-green-400"
+                                          >
+                                            <Globe className="w-3 h-3" />
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>{displayToken.socials.website ? 'Visit Website' : 'View on Solscan'}</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    )}
                                   </div>
                                 </div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="text-white font-medium transition-all duration-500">{formatPrice(displayToken.price)}</div>
+                              <div className={`text-sm flex items-center gap-1 font-medium transition-all duration-500 ${displayToken.priceChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                {displayToken.priceChange >= 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
+                                {displayToken.priceChange >= 0 ? '+' : ''}{displayToken.priceChange.toFixed(2)}%
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="text-white font-medium transition-all duration-500">{formatCurrency(displayToken.marketCap)}</div>
+                              <div className={`text-sm font-medium transition-all duration-500 ${displayToken.priceChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                {displayToken.priceChange >= 0 ? '+' : ''}{displayToken.priceChange.toFixed(2)}%
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-white font-medium transition-all duration-500">{formatCurrency(displayToken.liquidity)}</TableCell>
+                          <TableCell className="text-white font-medium transition-all duration-500">{formatCurrency(displayToken.volume)}</TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="text-white font-medium transition-all duration-500">{displayToken.transactions.toLocaleString()}</div>
+                              <div className="flex items-center gap-1 mt-1">
+                                <div className="flex-1 bg-slate-600 rounded-full h-2">
+                                  <div 
+                                    className="bg-green-500 h-2 rounded-full transition-all duration-500" 
+                                    style={{ width: `${(displayToken.buyTxns / displayToken.transactions) * 100}%` }}
+                                  />
+                                </div>
+                                <span className="text-xs text-slate-400 transition-all duration-500">
+                                  {displayToken.buyTxns} / {displayToken.sellTxns}
+                                </span>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className={`flex items-center gap-1 px-2 py-1 rounded text-sm font-bold ${
+                                    getSecurityScore(displayToken) >= 7 
+                                      ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                                      : getSecurityScore(displayToken) >= 5
+                                      ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                                      : getSecurityScore(displayToken) >= 3
+                                      ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                                      : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                  }`}>
+                                    <Shield className="w-3 h-3" />
+                                    {getSecurityScore(displayToken)}/8
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-slate-800 border-slate-700 text-white max-w-xs">
+                                  <div className="space-y-2">
+                                    <div className="font-medium text-center mb-2">Security Analysis</div>
+                                    <div className="text-xs space-y-1">
+                                      <div className="flex justify-between">
+                                        <span>Dev Wallet:</span>
+                                        <span className={displayToken.devHoldings && displayToken.devHoldings > 10 ? 'text-red-400' : 'text-green-400'}>
+                                          {displayToken.devHoldings || 0}%
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span>Insider:</span>
+                                        <span className={displayToken.insiderHolding && displayToken.insiderHolding > 20 ? 'text-red-400' : 'text-green-400'}>
+                                          {displayToken.insiderHolding || 0}%
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span>Bundle:</span>
+                                        <span className={displayToken.bundlers && displayToken.bundlers > 15 ? 'text-red-400' : 'text-green-400'}>
+                                          {displayToken.bundlers || 0}%
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span>Sniper Wallets:</span>
+                                        <span className={displayToken.snipersPercent && displayToken.snipersPercent > 10 ? 'text-red-400' : 'text-green-400'}>
+                                          {displayToken.snipersPercent || 0}%
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span>Bot Wallets:</span>
+                                        <span className="text-green-400">0.5%</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span>Top 10 Holders:</span>
+                                        <span className={displayToken.topHoldersPercent && displayToken.topHoldersPercent > 40 ? 'text-red-400' : 'text-green-400'}>
+                                          {displayToken.topHoldersPercent || 0}%
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span>LP Burned:</span>
+                                        <span className={displayToken.lpBurned ? 'text-green-400' : 'text-red-400'}>
+                                          {displayToken.lpBurned ? 'Yes' : 'No'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
+                          </TableCell>
+                          <TableCell className="sticky right-0 bg-slate-800/90 backdrop-blur-sm border-l border-slate-700">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  size="sm" 
+                                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-medium shadow-lg"
+                                  onClick={() => handleQuickBuy(displayToken)}
+                                >
+                                  <Banana className="w-4 h-4 mr-1" />
+                                  {buyAmount}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Buy {buyAmount} SOL</p>
                               </TooltipContent>
                             </Tooltip>
-                          </div>
-                        </TableCell>
-                        <TableCell className="sticky right-0 bg-slate-800/90 backdrop-blur-sm border-l border-slate-700">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button 
-                                size="sm" 
-                                className="bg-yellow-500 hover:bg-yellow-600 text-black font-medium shadow-lg"
-                                onClick={() => handleQuickBuy(token)}
-                              >
-                                <Banana className="w-4 h-4 mr-1" />
-                                {buyAmount}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Buy {buyAmount} SOL</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
