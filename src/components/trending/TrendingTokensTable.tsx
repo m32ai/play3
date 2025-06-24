@@ -455,20 +455,20 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                     <Filter className="w-4 h-4 mr-1" />
                     Filters
                     {activeFilterCount > 0 && (
-                      <Badge variant="secondary" className="ml-2 bg-yellow-500 text-slate-900">
+                      <Badge variant="secondary" className="ml-2 bg-yellow-500 text-black">
                         {activeFilterCount}
                       </Badge>
                     )}
                   </Button>
                 </SheetTrigger>
-                <SheetContent className="bg-slate-800 border-slate-700 text-white w-96 overflow-y-auto">
+                <SheetContent className="bg-black border-yellow-500/30 text-white w-96 overflow-y-auto">
                   <SheetHeader>
-                    <SheetTitle className="text-white">Filter Tokens</SheetTitle>
+                    <SheetTitle className="text-yellow-500 text-xl font-bold">Filter Tokens</SheetTitle>
                   </SheetHeader>
                   <div className="space-y-6 mt-6">
                     {/* Protocols */}
                     <div>
-                      <Label className="text-white mb-3 block">Protocols</Label>
+                      <Label className="text-yellow-500 mb-3 block font-semibold text-sm uppercase tracking-wide">Protocols</Label>
                       <div className="grid grid-cols-2 gap-2">
                         {protocols.map((protocol) => (
                           <Button
@@ -476,10 +476,10 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                             size="sm"
                             variant={activeFilters.selectedProtocols.includes(protocol.name) ? "default" : "outline"}
                             onClick={() => toggleProtocol(protocol.name)}
-                            className={`text-xs h-8 ${
+                            className={`text-xs h-9 transition-all duration-200 ${
                               activeFilters.selectedProtocols.includes(protocol.name)
-                                ? `${protocol.color} text-white border-none`
-                                : "border-slate-600 text-slate-300 hover:text-white"
+                                ? "bg-yellow-500 text-black border-yellow-500 hover:bg-yellow-400 font-medium"
+                                : "border-yellow-500/30 text-yellow-400 hover:text-black hover:bg-yellow-500 hover:border-yellow-500"
                             }`}
                           >
                             <span className="mr-1">{protocol.icon}</span>
@@ -492,7 +492,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                     {/* Keywords */}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-white">Search Keywords</Label>
+                        <Label className="text-yellow-500 font-semibold text-sm uppercase tracking-wide">Search Keywords</Label>
                         <Input 
                           placeholder="keyword1, keyword2..." 
                           value={activeFilters.searchKeywords} 
@@ -500,11 +500,11 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                             ...prev, 
                             searchKeywords: e.target.value 
                           }))}
-                          className="bg-slate-700 border-slate-600 text-white mt-2"
+                          className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 mt-2 focus:border-yellow-500 focus:ring-yellow-500"
                         />
                       </div>
                       <div>
-                        <Label className="text-white">Exclude Keywords</Label>
+                        <Label className="text-yellow-500 font-semibold text-sm uppercase tracking-wide">Exclude Keywords</Label>
                         <Input 
                           placeholder="keyword1, keyword2..." 
                           value={activeFilters.excludeKeywords} 
@@ -512,21 +512,21 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                             ...prev, 
                             excludeKeywords: e.target.value 
                           }))}
-                          className="bg-slate-700 border-slate-600 text-white mt-2"
+                          className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 mt-2 focus:border-yellow-500 focus:ring-yellow-500"
                         />
                       </div>
                     </div>
 
                     {/* Audit and Metrics Tabs */}
                     <Tabs defaultValue="audit" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2 bg-slate-700">
-                        <TabsTrigger value="audit" className="text-white data-[state=active]:bg-slate-600">Audit</TabsTrigger>
-                        <TabsTrigger value="metrics" className="text-white data-[state=active]:bg-slate-600">Metrics</TabsTrigger>
+                      <TabsList className="grid w-full grid-cols-2 bg-black/50 border border-yellow-500/30">
+                        <TabsTrigger value="audit" className="text-yellow-400 data-[state=active]:bg-yellow-500 data-[state=active]:text-black font-medium">Audit</TabsTrigger>
+                        <TabsTrigger value="metrics" className="text-yellow-400 data-[state=active]:bg-yellow-500 data-[state=active]:text-black font-medium">Metrics</TabsTrigger>
                       </TabsList>
                       
-                      <TabsContent value="audit" className="space-y-4 mt-4">
+                      <TabsContent value="audit" className="space-y-6 mt-6">
                         {/* Dex Paid */}
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-3 p-3 bg-black/30 rounded-lg border border-yellow-500/20">
                           <Checkbox 
                             id="dexPaid"
                             checked={activeFilters.dexPaid === true}
@@ -534,15 +534,15 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                               ...prev,
                               dexPaid: checked ? true : null
                             }))}
-                            className="border-slate-600"
+                            className="border-yellow-500/50 data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
                           />
-                          <Label htmlFor="dexPaid" className="text-white">Dex Paid</Label>
+                          <Label htmlFor="dexPaid" className="text-white font-medium">Dex Paid</Label>
                         </div>
 
                         {/* Top 10 Holders % */}
                         <div>
-                          <Label className="text-white">Top 10 Holders %</Label>
-                          <div className="flex gap-2 mt-2">
+                          <Label className="text-yellow-500 font-semibold text-sm uppercase tracking-wide">Top 10 Holders %</Label>
+                          <div className="flex gap-3 mt-3">
                             <Input 
                               placeholder="Min" 
                               type="number"
@@ -551,7 +551,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 topHoldersMin: e.target.value ? parseFloat(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                             <Input 
                               placeholder="Max" 
@@ -561,15 +561,15 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 topHoldersMax: e.target.value ? parseFloat(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                           </div>
                         </div>
 
                         {/* Insider Holding % */}
                         <div>
-                          <Label className="text-white">Insider Holding %</Label>
-                          <div className="flex gap-2 mt-2">
+                          <Label className="text-yellow-500 font-semibold text-sm uppercase tracking-wide">Insider Holding %</Label>
+                          <div className="flex gap-3 mt-3">
                             <Input 
                               placeholder="Min" 
                               type="number"
@@ -578,7 +578,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 insiderHoldingMin: e.target.value ? parseFloat(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                             <Input 
                               placeholder="Max" 
@@ -588,15 +588,15 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 insiderHoldingMax: e.target.value ? parseFloat(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                           </div>
                         </div>
 
                         {/* Bundlers % */}
                         <div>
-                          <Label className="text-white">Bundlers %</Label>
-                          <div className="flex gap-2 mt-2">
+                          <Label className="text-yellow-500 font-semibold text-sm uppercase tracking-wide">Bundlers %</Label>
+                          <div className="flex gap-3 mt-3">
                             <Input 
                               placeholder="Min" 
                               type="number"
@@ -605,7 +605,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 bundlersMin: e.target.value ? parseFloat(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                             <Input 
                               placeholder="Max" 
@@ -615,15 +615,15 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 bundlersMax: e.target.value ? parseFloat(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                           </div>
                         </div>
 
                         {/* Dev Holdings % */}
                         <div>
-                          <Label className="text-white">Dev Holdings %</Label>
-                          <div className="flex gap-2 mt-2">
+                          <Label className="text-yellow-500 font-semibold text-sm uppercase tracking-wide">Dev Holdings %</Label>
+                          <div className="flex gap-3 mt-3">
                             <Input 
                               placeholder="Min" 
                               type="number"
@@ -632,7 +632,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 devHoldingsMin: e.target.value ? parseFloat(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                             <Input 
                               placeholder="Max" 
@@ -642,17 +642,17 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 devHoldingsMax: e.target.value ? parseFloat(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                           </div>
                         </div>
                       </TabsContent>
 
-                      <TabsContent value="metrics" className="space-y-4 mt-4">
-                        {/* Basic filters */}
+                      <TabsContent value="metrics" className="space-y-6 mt-6">
+                        {/* Price Range */}
                         <div>
-                          <Label className="text-white">Price Range</Label>
-                          <div className="flex gap-2 mt-2">
+                          <Label className="text-yellow-500 font-semibold text-sm uppercase tracking-wide">Price Range</Label>
+                          <div className="flex gap-3 mt-3">
                             <Input 
                               placeholder="Min Price" 
                               type="number"
@@ -662,7 +662,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 priceMin: e.target.value ? parseFloat(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                             <Input 
                               placeholder="Max Price" 
@@ -673,14 +673,15 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 priceMax: e.target.value ? parseFloat(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                           </div>
                         </div>
 
+                        {/* Volume Range */}
                         <div>
-                          <Label className="text-white">Volume Range ($)</Label>
-                          <div className="flex gap-2 mt-2">
+                          <Label className="text-yellow-500 font-semibold text-sm uppercase tracking-wide">Volume Range ($)</Label>
+                          <div className="flex gap-3 mt-3">
                             <Input 
                               placeholder="Min Volume" 
                               type="number"
@@ -689,7 +690,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 volumeMin: e.target.value ? parseFloat(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                             <Input 
                               placeholder="Max Volume" 
@@ -699,14 +700,15 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 volumeMax: e.target.value ? parseFloat(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                           </div>
                         </div>
 
+                        {/* Market Cap Range */}
                         <div>
-                          <Label className="text-white">Market Cap Range ($)</Label>
-                          <div className="flex gap-2 mt-2">
+                          <Label className="text-yellow-500 font-semibold text-sm uppercase tracking-wide">Market Cap Range ($)</Label>
+                          <div className="flex gap-3 mt-3">
                             <Input 
                               placeholder="Min Market Cap" 
                               type="number"
@@ -715,7 +717,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 marketCapMin: e.target.value ? parseFloat(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                             <Input 
                               placeholder="Max Market Cap" 
@@ -725,14 +727,15 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 marketCapMax: e.target.value ? parseFloat(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                           </div>
                         </div>
 
+                        {/* Liquidity Range */}
                         <div>
-                          <Label className="text-white">Liquidity Range ($)</Label>
-                          <div className="flex gap-2 mt-2">
+                          <Label className="text-yellow-500 font-semibold text-sm uppercase tracking-wide">Liquidity Range ($)</Label>
+                          <div className="flex gap-3 mt-3">
                             <Input 
                               placeholder="Min Liquidity" 
                               type="number"
@@ -741,7 +744,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 liquidityMin: e.target.value ? parseFloat(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                             <Input 
                               placeholder="Max Liquidity" 
@@ -751,14 +754,15 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 liquidityMax: e.target.value ? parseFloat(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                           </div>
                         </div>
 
+                        {/* Transactions Range */}
                         <div>
-                          <Label className="text-white">Transactions Range</Label>
-                          <div className="flex gap-2 mt-2">
+                          <Label className="text-yellow-500 font-semibold text-sm uppercase tracking-wide">Transactions Range</Label>
+                          <div className="flex gap-3 mt-3">
                             <Input 
                               placeholder="Min TXNs" 
                               type="number"
@@ -767,7 +771,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 txnsMin: e.target.value ? parseInt(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                             <Input 
                               placeholder="Max TXNs" 
@@ -777,15 +781,15 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 txnsMax: e.target.value ? parseInt(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                           </div>
                         </div>
 
                         {/* Holders Count */}
                         <div>
-                          <Label className="text-white">Holders Count</Label>
-                          <div className="flex gap-2 mt-2">
+                          <Label className="text-yellow-500 font-semibold text-sm uppercase tracking-wide">Holders Count</Label>
+                          <div className="flex gap-3 mt-3">
                             <Input 
                               placeholder="Min" 
                               type="number"
@@ -794,7 +798,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 holdersCountMin: e.target.value ? parseInt(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                             <Input 
                               placeholder="Max" 
@@ -804,15 +808,15 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 holdersCountMax: e.target.value ? parseInt(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                           </div>
                         </div>
 
                         {/* Pro Traders Count */}
                         <div>
-                          <Label className="text-white">Pro Traders Count</Label>
-                          <div className="flex gap-2 mt-2">
+                          <Label className="text-yellow-500 font-semibold text-sm uppercase tracking-wide">Pro Traders Count</Label>
+                          <div className="flex gap-3 mt-3">
                             <Input 
                               placeholder="Min" 
                               type="number"
@@ -821,7 +825,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 proTradersCountMin: e.target.value ? parseInt(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                             <Input 
                               placeholder="Max" 
@@ -831,7 +835,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 ...prev, 
                                 proTradersCountMax: e.target.value ? parseInt(e.target.value) : null 
                               }))}
-                              className="bg-slate-700 border-slate-600 text-white"
+                              className="bg-black/50 border-yellow-500/30 text-white placeholder-slate-400 focus:border-yellow-500 focus:ring-yellow-500"
                             />
                           </div>
                         </div>
@@ -968,7 +972,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                 size="sm"
                                 variant="ghost"
                                 onClick={() => token.socials.website && openSocialLink(token.socials.website)}
-                                className="h-6 w-6 p-0 text-slate-400 hover:text-white"
+                                className="h-6 w-6 p-0 text-slate-400 hover:text-blue-400"
                                 disabled={!token.socials.website}
                               >
                                 <ExternalLink className="w-3 h-3" />
@@ -1054,7 +1058,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                     className="h-5 w-5 p-0 text-slate-400 hover:text-indigo-400"
                                   >
                                     <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                                      <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419-.0190 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1568 2.4189Z"/>
+                                      <path d="M20.317 4.3698c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1568 2.4189Z"/>
                                     </svg>
                                   </Button>
                                 )}
