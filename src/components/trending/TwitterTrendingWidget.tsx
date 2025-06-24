@@ -208,8 +208,8 @@ const TwitterTrendingWidget = ({ timeframe, buyAmount }: { timeframe: string; bu
                 onClick={() => handleTokenClick(token)}
               >
                 <div className="flex items-center space-x-3 flex-1 min-w-0">
-                  <span className="text-slate-400 text-sm font-medium w-4">{token.rank}</span>
-                  <div className="w-6 h-6 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                  <span className="text-slate-400 text-sm font-medium w-4 flex-shrink-0">{token.rank}</span>
+                  <div className="w-6 h-6 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                     {token.icon}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -217,7 +217,7 @@ const TwitterTrendingWidget = ({ timeframe, buyAmount }: { timeframe: string; bu
                       <div className="text-white font-medium text-sm">${token.symbol}</div>
                       <HoverCard openDelay={0} closeDelay={300}>
                         <HoverCardTrigger asChild>
-                          <div className="text-blue-400 hover:text-blue-300 cursor-pointer">
+                          <div className="text-blue-400 hover:text-blue-300 cursor-pointer flex-shrink-0">
                             <Twitter className="w-3 h-3" />
                           </div>
                         </HoverCardTrigger>
@@ -255,28 +255,30 @@ const TwitterTrendingWidget = ({ timeframe, buyAmount }: { timeframe: string; bu
                         </HoverCardContent>
                       </HoverCard>
                     </div>
-                    <div className="text-slate-400 text-xs">{token.name}</div>
+                    <div className="text-slate-400 text-xs truncate">{token.name}</div>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <div className="text-right">
-                    <div className="text-white font-medium text-sm transition-all duration-500">{token.tweetCount.toLocaleString()}</div>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <div className="text-right min-w-0">
+                    <div className="text-white font-medium text-sm transition-all duration-500 whitespace-nowrap">
+                      {token.tweetCount.toLocaleString()}
+                    </div>
                     <div className="flex items-center justify-end gap-1">
-                      <span className={`text-xs font-medium transition-all duration-500 ${
+                      <span className={`text-xs font-medium transition-all duration-500 whitespace-nowrap ${
                         token.trend === 'up' ? 'text-green-400' : 'text-red-400'
                       }`}>
                         {token.trend === 'up' ? '+' : ''}{token.trendPercentage.toFixed(1)}%
                       </span>
-                      <span className="text-slate-400 text-xs">tweets</span>
                     </div>
+                    <div className="text-slate-400 text-xs whitespace-nowrap">tweets</div>
                   </div>
                   
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button 
                         size="sm" 
-                        className="bg-yellow-500 hover:bg-yellow-600 text-black font-medium text-xs h-6 px-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
+                        className="bg-yellow-500 hover:bg-yellow-600 text-black font-medium text-xs h-6 px-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap flex-shrink-0"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleQuickBuy(token);
