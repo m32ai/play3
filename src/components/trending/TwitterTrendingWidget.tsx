@@ -200,25 +200,25 @@ const TwitterTrendingWidget = ({ timeframe, buyAmount }: { timeframe: string; bu
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="space-y-3">
+          <div className="space-y-4">
             {tokensToShow.map((token) => (
               <div 
                 key={token.id} 
-                className="flex items-center justify-between p-4 rounded-lg hover:bg-slate-700/30 transition-all duration-300 cursor-pointer group animate-fade-in border border-slate-700/50 hover:border-slate-600/50"
+                className="flex items-start justify-between p-6 rounded-lg hover:bg-slate-700/30 transition-all duration-300 cursor-pointer group animate-fade-in border border-slate-700/50 hover:border-slate-600/50 min-h-[120px]"
                 onClick={() => handleTokenClick(token)}
               >
-                <div className="flex items-center space-x-4 flex-1 min-w-0">
-                  <span className="text-slate-400 text-base font-medium w-6 flex-shrink-0">{token.rank}</span>
-                  <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                <div className="flex items-start space-x-5 flex-1 min-w-0">
+                  <span className="text-slate-400 text-lg font-bold w-8 flex-shrink-0 mt-1">{token.rank}</span>
+                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 mt-1">
                     {token.icon}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-1">
-                      <div className="text-white font-semibold text-base">${token.symbol}</div>
+                  <div className="flex-1 min-w-0 space-y-3">
+                    <div className="flex items-center gap-4">
+                      <div className="text-white font-bold text-xl">${token.symbol}</div>
                       <HoverCard openDelay={0} closeDelay={300}>
                         <HoverCardTrigger asChild>
                           <div className="text-blue-400 hover:text-blue-300 cursor-pointer flex-shrink-0">
-                            <Twitter className="w-4 h-4" />
+                            <Twitter className="w-5 h-5" />
                           </div>
                         </HoverCardTrigger>
                         <HoverCardContent className="w-80 bg-slate-800 border-slate-700 text-white">
@@ -255,37 +255,39 @@ const TwitterTrendingWidget = ({ timeframe, buyAmount }: { timeframe: string; bu
                         </HoverCardContent>
                       </HoverCard>
                     </div>
-                    <div className="text-slate-300 text-sm font-medium mb-1">{token.name}</div>
-                    <div className="text-slate-500 text-xs">Cryptocurrency</div>
+                    <div className="space-y-2">
+                      <div className="text-slate-300 text-base font-semibold">{token.name}</div>
+                      <div className="text-slate-500 text-sm">Cryptocurrency • Trending on Twitter</div>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-4 flex-shrink-0">
-                  <div className="text-right min-w-0">
-                    <div className="text-white font-semibold text-lg transition-all duration-500 whitespace-nowrap">
+                <div className="flex items-start gap-6 flex-shrink-0 ml-4">
+                  <div className="text-right min-w-0 space-y-2">
+                    <div className="text-white font-bold text-2xl transition-all duration-500 whitespace-nowrap">
                       {token.tweetCount.toLocaleString()}
                     </div>
-                    <div className="flex items-center justify-end gap-1 mb-1">
-                      <span className={`text-sm font-semibold transition-all duration-500 whitespace-nowrap ${
+                    <div className="flex items-center justify-end gap-2">
+                      <span className={`text-base font-bold transition-all duration-500 whitespace-nowrap ${
                         token.trend === 'up' ? 'text-green-400' : 'text-red-400'
                       }`}>
                         {token.trend === 'up' ? '↗' : '↘'} {token.trend === 'up' ? '+' : ''}{token.trendPercentage.toFixed(1)}%
                       </span>
                     </div>
-                    <div className="text-slate-400 text-xs whitespace-nowrap">tweets/hour</div>
+                    <div className="text-slate-400 text-sm whitespace-nowrap">tweets/hour</div>
                   </div>
                   
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button 
                         size="sm" 
-                        className="bg-yellow-500 hover:bg-yellow-600 text-black font-medium text-sm h-8 px-3 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap flex-shrink-0"
+                        className="bg-yellow-500 hover:bg-yellow-600 text-black font-medium text-sm h-10 px-4 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap flex-shrink-0 mt-2"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleQuickBuy(token);
                         }}
                       >
-                        <Banana className="w-4 h-4 mr-1" />
+                        <Banana className="w-4 h-4 mr-2" />
                         {buyAmount}
                       </Button>
                     </TooltipTrigger>
@@ -298,10 +300,10 @@ const TwitterTrendingWidget = ({ timeframe, buyAmount }: { timeframe: string; bu
             ))}
           </div>
           
-          <div className="mt-6 pt-4 border-t border-slate-700">
+          <div className="mt-8 pt-6 border-t border-slate-700">
             <Button 
               variant="ghost" 
-              className="w-full text-blue-400 hover:text-blue-300 text-sm h-9"
+              className="w-full text-blue-400 hover:text-blue-300 text-sm h-10"
               onClick={handleViewAllTrends}
             >
               {showAllTrends ? 'Show Less' : 'View All Twitter Trends'}
