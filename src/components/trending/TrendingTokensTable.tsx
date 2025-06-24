@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Filter, ArrowUpDown, ArrowUp, ArrowDown, Copy, ExternalLink, X, RotateCcw, TrendingUp, Banana } from "lucide-react";
+import { Search, Filter, ArrowUpDown, ArrowUp, ArrowDown, Copy, ExternalLink, X, RotateCcw, TrendingUp, Banana, Users, Code, Eye, Zap, Target, Flame } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -33,6 +33,8 @@ interface Token {
   devHoldings?: number;
   holdersCount?: number;
   proTradersCount?: number;
+  snipersPercent?: number;
+  lpBurned?: boolean;
   socials: {
     twitter?: string;
     telegram?: string;
@@ -208,6 +210,8 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
       devHoldings: Math.floor(Math.random() * 15) + 1,
       holdersCount: Math.floor(Math.random() * 10000) + 1000,
       proTradersCount: Math.floor(Math.random() * 500) + 50,
+      snipersPercent: Math.floor(Math.random() * 25) + 2,
+      lpBurned: Math.random() > 0.3,
     }));
   };
 
@@ -426,6 +430,56 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
       likes: Math.floor(Math.random() * 1000) + 10,
       retweets: Math.floor(Math.random() * 500) + 5,
     }));
+  };
+
+  const getSecurityIndicators = (token: Token) => {
+    const indicators = [
+      {
+        icon: Users,
+        value: token.topHoldersPercent || 0,
+        label: "Top 10 Holders %",
+        isRisk: (token.topHoldersPercent || 0) > 40,
+        tooltip: "Percentage held by top 10 holders. High concentration (>40%) indicates risk."
+      },
+      {
+        icon: Code,
+        value: token.devHoldings || 0,
+        label: "Dev Holdings %",
+        isRisk: (token.devHoldings || 0) > 10,
+        tooltip: "Percentage held by developers. High dev holdings (>10%) may indicate risk."
+      },
+      {
+        icon: Eye,
+        value: token.insiderHolding || 0,
+        label: "Insider Holdings %",
+        isRisk: (token.insiderHolding || 0) > 20,
+        tooltip: "Percentage held by insiders. High insider concentration (>20%) indicates risk."
+      },
+      {
+        icon: Zap,
+        value: token.bundlers || 0,
+        label: "Bundlers %",
+        isRisk: (token.bundlers || 0) > 15,
+        tooltip: "Percentage from bundled transactions. High bundling (>15%) may indicate manipulation."
+      },
+      {
+        icon: Target,
+        value: token.snipersPercent || 0,
+        label: "Snipers %",
+        isRisk: (token.snipersPercent || 0) > 10,
+        tooltip: "Percentage held by snipers/bots. High sniper activity (>10%) indicates risk."
+      },
+      {
+        icon: Flame,
+        value: token.lpBurned ? 100 : 0,
+        label: "LP Burned",
+        isRisk: !token.lpBurned,
+        tooltip: "Whether liquidity pool tokens are burned. Unburned LP tokens indicate risk.",
+        isBoolean: true
+      }
+    ];
+
+    return indicators;
   };
 
   return (
@@ -941,6 +995,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                         {getSortIcon('transactions')}
                       </div>
                     </TableHead>
+                    <TableHead className="text-slate-300">Security</TableHead>
                     <TableHead className="text-slate-300 sticky right-0 bg-slate-800/90 backdrop-blur-sm">Action</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -996,7 +1051,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                         className="h-5 w-5 p-0 text-slate-400 hover:text-blue-400"
                                       >
                                         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
                                         </svg>
                                       </Button>
                                     </HoverCardTrigger>
@@ -1050,18 +1105,6 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                                     </svg>
                                   </Button>
                                 )}
-                                {token.socials.discord && (
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => openSocialLink(token.socials.discord!)}
-                                    className="h-5 w-5 p-0 text-slate-400 hover:text-indigo-400"
-                                  >
-                                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                                      <path d="M20.317 4.37c-1.53-.69-3.166-1.2-4.885-1.49a.075.075 0 0 0-.079.036c-.21.369-.444.85-.608 1.23a18.64 18.64 0 0 0-5.487 0 12.404 12.404 0 0 0-.617-1.23A.076.076 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418z"/>
-                                    </svg>
-                                  </Button>
-                                )}
                               </div>
                             </div>
                           </div>
@@ -1100,6 +1143,33 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                               {token.buyTxns} / {token.sellTxns}
                             </span>
                           </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          {getSecurityIndicators(token).map((indicator, index) => (
+                            <Tooltip key={index}>
+                              <TooltipTrigger asChild>
+                                <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${
+                                  indicator.isRisk 
+                                    ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+                                    : 'bg-green-500/20 text-green-400 border border-green-500/30'
+                                }`}>
+                                  <indicator.icon className="w-3 h-3" />
+                                  {indicator.isBoolean 
+                                    ? (indicator.value > 0 ? '✓' : '✗')
+                                    : `${indicator.value}%`
+                                  }
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-slate-800 border-slate-700 text-white">
+                                <div className="font-medium">{indicator.label}</div>
+                                <div className="text-sm text-slate-300 mt-1 max-w-xs">
+                                  {indicator.tooltip}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          ))}
                         </div>
                       </TableCell>
                       <TableCell className="sticky right-0 bg-slate-800/90 backdrop-blur-sm border-l border-slate-700">
