@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ interface WalletActivity {
   totalAmountUSD: number;
   totalAmountSOL: number;
   walletCount: number;
+  labels?: string[];
 }
 
 const TrackedWalletActivity = ({ timeframe, buyAmount }: { timeframe: string; buyAmount: string }) => {
@@ -23,6 +25,34 @@ const TrackedWalletActivity = ({ timeframe, buyAmount }: { timeframe: string; bu
   const [showAllActivity, setShowAllActivity] = useState(false);
   const [isWalletTrackerOpen, setIsWalletTrackerOpen] = useState(false);
   const [highlightLabel, setHighlightLabel] = useState<string>("");
+
+  const walletLabelConfig = {
+    "Sniper": {
+      emoji: "🎯",
+      description: "Quick entry wallets that buy tokens within seconds of launch",
+      scenarios: ["First 10 buyers", "Sub-second purchases", "MEV bot patterns"]
+    },
+    "Whale": {
+      emoji: "🐋", 
+      description: "Large volume traders with significant buying power",
+      scenarios: ["Buys > 50 SOL", "Portfolio > 1000 SOL", "Market moving trades"]
+    },
+    "Diamond": {
+      emoji: "💎",
+      description: "Long-term holders with strong conviction",
+      scenarios: ["Hold > 30 days", "No sells during dips", "DCA patterns"]
+    },
+    "Smart": {
+      emoji: "🧠",
+      description: "Consistently profitable traders with high win rates",
+      scenarios: ["Win rate > 70%", "Profit > 100 SOL", "Early trend spotters"]
+    },
+    "Fresh": {
+      emoji: "🆕",
+      description: "New wallets with recent first transactions",
+      scenarios: ["Created < 7 days", "First major buy", "Potential insider"]
+    }
+  };
 
   const generateRandomWalletData = (): WalletActivity[] => {
     const baseTokens = [
@@ -33,13 +63,23 @@ const TrackedWalletActivity = ({ timeframe, buyAmount }: { timeframe: string; bu
       { id: "5", icon: "S", tokenName: "StarToken", tokenSymbol: "STAR" }
     ];
 
-    return baseTokens.map((token) => ({
-      ...token,
-      buyCount: Math.floor(Math.random() * 50) + 10,
-      totalAmountUSD: Math.floor(Math.random() * 300000) + 50000,
-      totalAmountSOL: Math.floor(Math.random() * 500) + 100,
-      walletCount: Math.floor(Math.random() * 20) + 3
-    }));
+    const allLabels = Object.keys(walletLabelConfig);
+
+    return baseTokens.map((token) => {
+      // Randomly assign 1-3 labels to each token
+      const numLabels = Math.floor(Math.random() * 3) + 1;
+      const shuffledLabels = [...allLabels].sort(() => 0.5 - Math.random());
+      const selectedLabels = shuffledLabels.slice(0, numLabels);
+
+      return {
+        ...token,
+        buyCount: Math.floor(Math.random() * 50) + 10,
+        totalAmountUSD: Math.floor(Math.random() * 300000) + 50000,
+        totalAmountSOL: Math.floor(Math.random() * 500) + 100,
+        walletCount: Math.floor(Math.random() * 20) + 3,
+        labels: selectedLabels
+      };
+    });
   };
 
   useEffect(() => {
@@ -93,6 +133,62 @@ const TrackedWalletActivity = ({ timeframe, buyAmount }: { timeframe: string; bu
     // Implement quick buy logic here
   };
 
+  const renderWalletLabels = (labels: string[] = []) => {
+    if (labels.length === 0) return null;
+
+    return (
+      <div className="flex gap-1 mt-1 flex-wrap">
+        {labels.map((label, index) => {
+          const config = walletLabelConfig[label as keyof typeof walletLabelConfig];
+          if (!config) return null;
+
+          return (
+            <Tooltip key={`${label}-${index}`}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleWalletLabelClick(label);
+                  }}
+                  className="text-xs bg-slate-600/30 hover:bg-slate-600/50 text-slate-300 px-2 py-1 rounded transition-colors border border-slate-600/50"
+                >
+                  {config.emoji}
+                  {labels.length <= 2 && (
+                    <span className="ml-1">{label}</span>
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-64 p-3">
+                <div className="space-y-2">
+                  <div className="font-semibold text-sm flex items-center gap-2">
+                    <span className="text-base">{config.emoji}</span>
+                    {label}
+                  </div>
+                  <p className="text-xs text-slate-300">
+                    {config.description}
+                  </p>
+                  {labels.length > 1 && (
+                    <div className="mt-2">
+                      <div className="text-xs font-medium text-slate-400 mb-1">Common Scenarios:</div>
+                      <ul className="text-xs text-slate-300 space-y-1">
+                        {config.scenarios.map((scenario, idx) => (
+                          <li key={idx} className="flex items-start gap-1">
+                            <span className="text-slate-500">•</span>
+                            {scenario}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
+      </div>
+    );
+  };
+
   const activitiesToShow = showAllActivity ? walletActivities : walletActivities.slice(0, 3);
 
   return (
@@ -120,27 +216,7 @@ const TrackedWalletActivity = ({ timeframe, buyAmount }: { timeframe: string; bu
                     <div>
                       <div className="text-white font-medium text-sm">{activity.tokenName}</div>
                       <div className="text-slate-400 text-xs">${activity.tokenSymbol}</div>
-                      {/* Add wallet labels */}
-                      <div className="flex gap-1 mt-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleWalletLabelClick('Sniper');
-                          }}
-                          className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded hover:bg-orange-500/30 transition-colors"
-                        >
-                          Sniper
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleWalletLabelClick('Whale');
-                          }}
-                          className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded hover:bg-blue-500/30 transition-colors"
-                        >
-                          Whale
-                        </button>
-                      </div>
+                      {renderWalletLabels(activity.labels)}
                     </div>
                   </div>
                   <Tooltip>
