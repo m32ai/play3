@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -206,12 +207,12 @@ const TwitterTrendingWidget = ({ timeframe, buyAmount }: { timeframe: string; bu
                 className="flex items-center justify-between p-2 rounded hover:bg-slate-700/30 transition-all duration-300 cursor-pointer group animate-fade-in"
                 onClick={() => handleTokenClick(token)}
               >
-                <div className="flex items-center space-x-3 flex-1">
+                <div className="flex items-center space-x-3 flex-1 min-w-0">
                   <span className="text-slate-400 text-sm font-medium w-4">{token.rank}</span>
                   <div className="w-6 h-6 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
                     {token.icon}
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <div className="text-white font-medium text-sm">${token.symbol}</div>
                       <HoverCard openDelay={0} closeDelay={300}>
@@ -258,7 +259,7 @@ const TwitterTrendingWidget = ({ timeframe, buyAmount }: { timeframe: string; bu
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="text-right">
                     <div className="text-white font-medium text-sm transition-all duration-500">{token.tweetCount.toLocaleString()}</div>
                     <div className="flex items-center justify-end gap-1">
@@ -275,7 +276,7 @@ const TwitterTrendingWidget = ({ timeframe, buyAmount }: { timeframe: string; bu
                     <TooltipTrigger asChild>
                       <Button 
                         size="sm" 
-                        className="bg-yellow-500 hover:bg-yellow-600 text-black font-medium text-xs h-7 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="bg-yellow-500 hover:bg-yellow-600 text-black font-medium text-xs h-6 px-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleQuickBuy(token);
