@@ -9,6 +9,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Token {
   id: string;
@@ -23,6 +25,14 @@ interface Token {
   buyTxns: number;
   sellTxns: number;
   contractAddress: string;
+  protocol?: string;
+  dexPaid?: boolean;
+  topHoldersPercent?: number;
+  insiderHolding?: number;
+  bundlers?: number;
+  devHoldings?: number;
+  holdersCount?: number;
+  proTradersCount?: number;
   socials: {
     twitter?: string;
     telegram?: string;
@@ -47,7 +57,37 @@ interface Filters {
   liquidityMax: number | null;
   txnsMin: number | null;
   txnsMax: number | null;
+  selectedProtocols: string[];
+  searchKeywords: string;
+  excludeKeywords: string;
+  dexPaid: boolean | null;
+  topHoldersMin: number | null;
+  topHoldersMax: number | null;
+  insiderHoldingMin: number | null;
+  insiderHoldingMax: number | null;
+  bundlersMin: number | null;
+  bundlersMax: number | null;
+  devHoldingsMin: number | null;
+  devHoldingsMax: number | null;
+  holdersCountMin: number | null;
+  holdersCountMax: number | null;
+  proTradersCountMin: number | null;
+  proTradersCountMax: number | null;
 }
+
+const protocols = [
+  { name: "Pump", color: "bg-green-600", icon: "🚀" },
+  { name: "LaunchLab", color: "bg-blue-600", icon: "🔬" },
+  { name: "Bonk", color: "bg-orange-600", icon: "🔥" },
+  { name: "Dynamic BC", color: "bg-red-600", icon: "⚡" },
+  { name: "Launch a Coin", color: "bg-green-700", icon: "💰" },
+  { name: "Boop", color: "bg-blue-700", icon: "👻" },
+  { name: "Moonit", color: "bg-yellow-600", icon: "🌙" },
+  { name: "Raydium", color: "bg-purple-600", icon: "⚡" },
+  { name: "Pump AMM", color: "bg-gray-600", icon: "🔧" },
+  { name: "Meteora AMM", color: "bg-orange-700", icon: "☄️" },
+  { name: "Meteora AMM V2", color: "bg-orange-800", icon: "☄️" },
+];
 
 const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyAmount: string }) => {
   const [tokens, setTokens] = useState<Token[]>([]);
@@ -66,7 +106,23 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
     liquidityMin: null,
     liquidityMax: null,
     txnsMin: null,
-    txnsMax: null
+    txnsMax: null,
+    selectedProtocols: [],
+    searchKeywords: "",
+    excludeKeywords: "",
+    dexPaid: null,
+    topHoldersMin: null,
+    topHoldersMax: null,
+    insiderHoldingMin: null,
+    insiderHoldingMax: null,
+    bundlersMin: null,
+    bundlersMax: null,
+    devHoldingsMin: null,
+    devHoldingsMax: null,
+    holdersCountMin: null,
+    holdersCountMax: null,
+    proTradersCountMin: null,
+    proTradersCountMax: null,
   });
 
   const generateRandomTokenData = (): Token[] => {
@@ -76,6 +132,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
         name: "Frogolicious",
         symbol: "FROG",
         contractAddress: "0x1234...5678",
+        protocol: "Pump",
         socials: {
           twitter: "https://twitter.com/frogolicious",
           telegram: "https://t.me/frogolicious",
@@ -88,6 +145,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
         name: "MoonShot",
         symbol: "MOON",
         contractAddress: "0xabcd...efgh",
+        protocol: "LaunchLab",
         socials: {
           twitter: "https://twitter.com/moonshot",
           telegram: "https://t.me/moonshot",
@@ -99,6 +157,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
         name: "DiamondHands",
         symbol: "DIAMOND",
         contractAddress: "0x9876...5432",
+        protocol: "Raydium",
         socials: {
           twitter: "https://twitter.com/diamondhands",
           discord: "https://discord.gg/diamondhands",
@@ -110,6 +169,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
         name: "RocketFuel",
         symbol: "ROCKET",
         contractAddress: "0xdef0...1234",
+        protocol: "Bonk",
         socials: {
           twitter: "https://twitter.com/rocketfuel",
           telegram: "https://t.me/rocketfuel",
@@ -122,6 +182,7 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
         name: "CryptoKing",
         symbol: "KING",
         contractAddress: "0x5678...9abc",
+        protocol: "Meteora AMM",
         socials: {
           telegram: "https://t.me/cryptoking",
           discord: "https://discord.gg/cryptoking",
@@ -139,7 +200,14 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
       volume: Math.floor(Math.random() * 1000000) + 100000,
       transactions: Math.floor(Math.random() * 3000) + 500,
       buyTxns: Math.floor(Math.random() * 2000) + 200,
-      sellTxns: Math.floor(Math.random() * 1500) + 200
+      sellTxns: Math.floor(Math.random() * 1500) + 200,
+      dexPaid: Math.random() > 0.5,
+      topHoldersPercent: Math.floor(Math.random() * 50) + 20,
+      insiderHolding: Math.floor(Math.random() * 30) + 5,
+      bundlers: Math.floor(Math.random() * 20) + 2,
+      devHoldings: Math.floor(Math.random() * 15) + 1,
+      holdersCount: Math.floor(Math.random() * 10000) + 1000,
+      proTradersCount: Math.floor(Math.random() * 500) + 50,
     }));
   };
 
@@ -168,15 +236,63 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
       token.contractAddress.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Apply filters
-    Object.entries(activeFilters).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) {
-        const filterKey = key.replace('Min', '').replace('Max', '') as keyof Token;
-        if (key.endsWith('Min')) {
-          filtered = filtered.filter(token => (token[filterKey] as number) >= value);
-        } else if (key.endsWith('Max')) {
-          filtered = filtered.filter(token => (token[filterKey] as number) <= value);
-        }
+    // Apply protocol filters
+    if (activeFilters.selectedProtocols.length > 0) {
+      filtered = filtered.filter(token => 
+        token.protocol && activeFilters.selectedProtocols.includes(token.protocol)
+      );
+    }
+
+    // Apply keyword filters
+    if (activeFilters.searchKeywords) {
+      const keywords = activeFilters.searchKeywords.split(',').map(k => k.trim().toLowerCase());
+      filtered = filtered.filter(token =>
+        keywords.some(keyword =>
+          token.name.toLowerCase().includes(keyword) ||
+          token.symbol.toLowerCase().includes(keyword)
+        )
+      );
+    }
+
+    if (activeFilters.excludeKeywords) {
+      const excludeKeywords = activeFilters.excludeKeywords.split(',').map(k => k.trim().toLowerCase());
+      filtered = filtered.filter(token =>
+        !excludeKeywords.some(keyword =>
+          token.name.toLowerCase().includes(keyword) ||
+          token.symbol.toLowerCase().includes(keyword)
+        )
+      );
+    }
+
+    // Apply dex paid filter
+    if (activeFilters.dexPaid !== null) {
+      filtered = filtered.filter(token => token.dexPaid === activeFilters.dexPaid);
+    }
+
+    // Apply numeric range filters
+    const numericFilters = [
+      { key: 'price', min: 'priceMin', max: 'priceMax' },
+      { key: 'volume', min: 'volumeMin', max: 'volumeMax' },
+      { key: 'marketCap', min: 'marketCapMin', max: 'marketCapMax' },
+      { key: 'liquidity', min: 'liquidityMin', max: 'liquidityMax' },
+      { key: 'transactions', min: 'txnsMin', max: 'txnsMax' },
+      { key: 'topHoldersPercent', min: 'topHoldersMin', max: 'topHoldersMax' },
+      { key: 'insiderHolding', min: 'insiderHoldingMin', max: 'insiderHoldingMax' },
+      { key: 'bundlers', min: 'bundlersMin', max: 'bundlersMax' },
+      { key: 'devHoldings', min: 'devHoldingsMin', max: 'devHoldingsMax' },
+      { key: 'holdersCount', min: 'holdersCountMin', max: 'holdersCountMax' },
+      { key: 'proTradersCount', min: 'proTradersCountMin', max: 'proTradersCountMax' },
+    ];
+
+    numericFilters.forEach(({ key, min, max }) => {
+      const minValue = activeFilters[min as keyof Filters] as number | null;
+      const maxValue = activeFilters[max as keyof Filters] as number | null;
+      
+      if (minValue !== null) {
+        filtered = filtered.filter(token => (token[key as keyof Token] as number) >= minValue);
+      }
+      if (maxValue !== null) {
+        filtered = filtered.filter(token => (token[key as keyof Token] as number) <= maxValue);
       }
     });
 
@@ -238,6 +354,15 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
     // Implement quick buy logic here
   };
 
+  const toggleProtocol = (protocolName: string) => {
+    setActiveFilters(prev => ({
+      ...prev,
+      selectedProtocols: prev.selectedProtocols.includes(protocolName)
+        ? prev.selectedProtocols.filter(p => p !== protocolName)
+        : [...prev.selectedProtocols, protocolName]
+    }));
+  };
+
   const clearAllFilters = () => {
     setActiveFilters({
       priceMin: null,
@@ -249,13 +374,35 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
       liquidityMin: null,
       liquidityMax: null,
       txnsMin: null,
-      txnsMax: null
+      txnsMax: null,
+      selectedProtocols: [],
+      searchKeywords: "",
+      excludeKeywords: "",
+      dexPaid: null,
+      topHoldersMin: null,
+      topHoldersMax: null,
+      insiderHoldingMin: null,
+      insiderHoldingMax: null,
+      bundlersMin: null,
+      bundlersMax: null,
+      devHoldingsMin: null,
+      devHoldingsMax: null,
+      holdersCountMin: null,
+      holdersCountMax: null,
+      proTradersCountMin: null,
+      proTradersCountMax: null,
     });
     setSearchTerm("");
   };
 
-  const hasActiveFilters = Object.values(activeFilters).some(value => value !== null) || searchTerm;
-  const activeFilterCount = Object.values(activeFilters).filter(value => value !== null).length;
+  const hasActiveFilters = Object.values(activeFilters).some(value => 
+    value !== null && value !== "" && (Array.isArray(value) ? value.length > 0 : true)
+  ) || searchTerm;
+  
+  const activeFilterCount = Object.entries(activeFilters).filter(([key, value]) => {
+    if (Array.isArray(value)) return value.length > 0;
+    return value !== null && value !== "";
+  }).length;
 
   const handleTokenClick = (token: Token) => {
     window.open(`/token/${token.symbol}`, '_blank');
@@ -314,147 +461,382 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                     )}
                   </Button>
                 </SheetTrigger>
-                <SheetContent className="bg-slate-800 border-slate-700 text-white w-96">
+                <SheetContent className="bg-slate-800 border-slate-700 text-white w-96 overflow-y-auto">
                   <SheetHeader>
                     <SheetTitle className="text-white">Filter Tokens</SheetTitle>
                   </SheetHeader>
                   <div className="space-y-6 mt-6">
-                    {/* Price Filter */}
+                    {/* Protocols */}
                     <div>
-                      <Label className="text-white">Price Range</Label>
-                      <div className="flex gap-2 mt-2">
+                      <Label className="text-white mb-3 block">Protocols</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {protocols.map((protocol) => (
+                          <Button
+                            key={protocol.name}
+                            size="sm"
+                            variant={activeFilters.selectedProtocols.includes(protocol.name) ? "default" : "outline"}
+                            onClick={() => toggleProtocol(protocol.name)}
+                            className={`text-xs h-8 ${
+                              activeFilters.selectedProtocols.includes(protocol.name)
+                                ? `${protocol.color} text-white border-none`
+                                : "border-slate-600 text-slate-300 hover:text-white"
+                            }`}
+                          >
+                            <span className="mr-1">{protocol.icon}</span>
+                            {protocol.name}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Keywords */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-white">Search Keywords</Label>
                         <Input 
-                          placeholder="Min Price" 
-                          type="number"
-                          step="0.000001"
-                          value={activeFilters.priceMin || ''} 
+                          placeholder="keyword1, keyword2..." 
+                          value={activeFilters.searchKeywords} 
                           onChange={(e) => setActiveFilters(prev => ({ 
                             ...prev, 
-                            priceMin: e.target.value ? parseFloat(e.target.value) : null 
+                            searchKeywords: e.target.value 
                           }))}
-                          className="bg-slate-700 border-slate-600 text-white"
+                          className="bg-slate-700 border-slate-600 text-white mt-2"
                         />
+                      </div>
+                      <div>
+                        <Label className="text-white">Exclude Keywords</Label>
                         <Input 
-                          placeholder="Max Price" 
-                          type="number"
-                          step="0.000001"
-                          value={activeFilters.priceMax || ''} 
+                          placeholder="keyword1, keyword2..." 
+                          value={activeFilters.excludeKeywords} 
                           onChange={(e) => setActiveFilters(prev => ({ 
                             ...prev, 
-                            priceMax: e.target.value ? parseFloat(e.target.value) : null 
+                            excludeKeywords: e.target.value 
                           }))}
-                          className="bg-slate-700 border-slate-600 text-white"
+                          className="bg-slate-700 border-slate-600 text-white mt-2"
                         />
                       </div>
                     </div>
 
-                    {/* Volume Filter */}
-                    <div>
-                      <Label className="text-white">Volume Range ($)</Label>
-                      <div className="flex gap-2 mt-2">
-                        <Input 
-                          placeholder="Min Volume" 
-                          type="number"
-                          value={activeFilters.volumeMin || ''} 
-                          onChange={(e) => setActiveFilters(prev => ({ 
-                            ...prev, 
-                            volumeMin: e.target.value ? parseFloat(e.target.value) : null 
-                          }))}
-                          className="bg-slate-700 border-slate-600 text-white"
-                        />
-                        <Input 
-                          placeholder="Max Volume" 
-                          type="number"
-                          value={activeFilters.volumeMax || ''} 
-                          onChange={(e) => setActiveFilters(prev => ({ 
-                            ...prev, 
-                            volumeMax: e.target.value ? parseFloat(e.target.value) : null 
-                          }))}
-                          className="bg-slate-700 border-slate-600 text-white"
-                        />
-                      </div>
-                    </div>
+                    {/* Audit and Metrics Tabs */}
+                    <Tabs defaultValue="audit" className="w-full">
+                      <TabsList className="grid w-full grid-cols-2 bg-slate-700">
+                        <TabsTrigger value="audit" className="text-white data-[state=active]:bg-slate-600">Audit</TabsTrigger>
+                        <TabsTrigger value="metrics" className="text-white data-[state=active]:bg-slate-600">Metrics</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="audit" className="space-y-4 mt-4">
+                        {/* Dex Paid */}
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="dexPaid"
+                            checked={activeFilters.dexPaid === true}
+                            onCheckedChange={(checked) => setActiveFilters(prev => ({
+                              ...prev,
+                              dexPaid: checked ? true : null
+                            }))}
+                            className="border-slate-600"
+                          />
+                          <Label htmlFor="dexPaid" className="text-white">Dex Paid</Label>
+                        </div>
 
-                    {/* Market Cap Filter */}
-                    <div>
-                      <Label className="text-white">Market Cap Range ($)</Label>
-                      <div className="flex gap-2 mt-2">
-                        <Input 
-                          placeholder="Min Market Cap" 
-                          type="number"
-                          value={activeFilters.marketCapMin || ''} 
-                          onChange={(e) => setActiveFilters(prev => ({ 
-                            ...prev, 
-                            marketCapMin: e.target.value ? parseFloat(e.target.value) : null 
-                          }))}
-                          className="bg-slate-700 border-slate-600 text-white"
-                        />
-                        <Input 
-                          placeholder="Max Market Cap" 
-                          type="number"
-                          value={activeFilters.marketCapMax || ''} 
-                          onChange={(e) => setActiveFilters(prev => ({ 
-                            ...prev, 
-                            marketCapMax: e.target.value ? parseFloat(e.target.value) : null 
-                          }))}
-                          className="bg-slate-700 border-slate-600 text-white"
-                        />
-                      </div>
-                    </div>
+                        {/* Top 10 Holders % */}
+                        <div>
+                          <Label className="text-white">Top 10 Holders %</Label>
+                          <div className="flex gap-2 mt-2">
+                            <Input 
+                              placeholder="Min" 
+                              type="number"
+                              value={activeFilters.topHoldersMin || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                topHoldersMin: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                            <Input 
+                              placeholder="Max" 
+                              type="number"
+                              value={activeFilters.topHoldersMax || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                topHoldersMax: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                          </div>
+                        </div>
 
-                    {/* Liquidity Filter */}
-                    <div>
-                      <Label className="text-white">Liquidity Range ($)</Label>
-                      <div className="flex gap-2 mt-2">
-                        <Input 
-                          placeholder="Min Liquidity" 
-                          type="number"
-                          value={activeFilters.liquidityMin || ''} 
-                          onChange={(e) => setActiveFilters(prev => ({ 
-                            ...prev, 
-                            liquidityMin: e.target.value ? parseFloat(e.target.value) : null 
-                          }))}
-                          className="bg-slate-700 border-slate-600 text-white"
-                        />
-                        <Input 
-                          placeholder="Max Liquidity" 
-                          type="number"
-                          value={activeFilters.liquidityMax || ''} 
-                          onChange={(e) => setActiveFilters(prev => ({ 
-                            ...prev, 
-                            liquidityMax: e.target.value ? parseFloat(e.target.value) : null 
-                          }))}
-                          className="bg-slate-700 border-slate-600 text-white"
-                        />
-                      </div>
-                    </div>
+                        {/* Insider Holding % */}
+                        <div>
+                          <Label className="text-white">Insider Holding %</Label>
+                          <div className="flex gap-2 mt-2">
+                            <Input 
+                              placeholder="Min" 
+                              type="number"
+                              value={activeFilters.insiderHoldingMin || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                insiderHoldingMin: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                            <Input 
+                              placeholder="Max" 
+                              type="number"
+                              value={activeFilters.insiderHoldingMax || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                insiderHoldingMax: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                          </div>
+                        </div>
 
-                    {/* TXNs Filter */}
-                    <div>
-                      <Label className="text-white">Transactions Range</Label>
-                      <div className="flex gap-2 mt-2">
-                        <Input 
-                          placeholder="Min TXNs" 
-                          type="number"
-                          value={activeFilters.txnsMin || ''} 
-                          onChange={(e) => setActiveFilters(prev => ({ 
-                            ...prev, 
-                            txnsMin: e.target.value ? parseInt(e.target.value) : null 
-                          }))}
-                          className="bg-slate-700 border-slate-600 text-white"
-                        />
-                        <Input 
-                          placeholder="Max TXNs" 
-                          type="number"
-                          value={activeFilters.txnsMax || ''} 
-                          onChange={(e) => setActiveFilters(prev => ({ 
-                            ...prev, 
-                            txnsMax: e.target.value ? parseInt(e.target.value) : null 
-                          }))}
-                          className="bg-slate-700 border-slate-600 text-white"
-                        />
-                      </div>
-                    </div>
+                        {/* Bundlers % */}
+                        <div>
+                          <Label className="text-white">Bundlers %</Label>
+                          <div className="flex gap-2 mt-2">
+                            <Input 
+                              placeholder="Min" 
+                              type="number"
+                              value={activeFilters.bundlersMin || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                bundlersMin: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                            <Input 
+                              placeholder="Max" 
+                              type="number"
+                              value={activeFilters.bundlersMax || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                bundlersMax: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Dev Holdings % */}
+                        <div>
+                          <Label className="text-white">Dev Holdings %</Label>
+                          <div className="flex gap-2 mt-2">
+                            <Input 
+                              placeholder="Min" 
+                              type="number"
+                              value={activeFilters.devHoldingsMin || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                devHoldingsMin: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                            <Input 
+                              placeholder="Max" 
+                              type="number"
+                              value={activeFilters.devHoldingsMax || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                devHoldingsMax: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                          </div>
+                        </div>
+                      </TabsContent>
+
+                      <TabsContent value="metrics" className="space-y-4 mt-4">
+                        {/* Basic filters */}
+                        <div>
+                          <Label className="text-white">Price Range</Label>
+                          <div className="flex gap-2 mt-2">
+                            <Input 
+                              placeholder="Min Price" 
+                              type="number"
+                              step="0.000001"
+                              value={activeFilters.priceMin || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                priceMin: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                            <Input 
+                              placeholder="Max Price" 
+                              type="number"
+                              step="0.000001"
+                              value={activeFilters.priceMax || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                priceMax: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label className="text-white">Volume Range ($)</Label>
+                          <div className="flex gap-2 mt-2">
+                            <Input 
+                              placeholder="Min Volume" 
+                              type="number"
+                              value={activeFilters.volumeMin || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                volumeMin: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                            <Input 
+                              placeholder="Max Volume" 
+                              type="number"
+                              value={activeFilters.volumeMax || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                volumeMax: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label className="text-white">Market Cap Range ($)</Label>
+                          <div className="flex gap-2 mt-2">
+                            <Input 
+                              placeholder="Min Market Cap" 
+                              type="number"
+                              value={activeFilters.marketCapMin || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                marketCapMin: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                            <Input 
+                              placeholder="Max Market Cap" 
+                              type="number"
+                              value={activeFilters.marketCapMax || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                marketCapMax: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label className="text-white">Liquidity Range ($)</Label>
+                          <div className="flex gap-2 mt-2">
+                            <Input 
+                              placeholder="Min Liquidity" 
+                              type="number"
+                              value={activeFilters.liquidityMin || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                liquidityMin: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                            <Input 
+                              placeholder="Max Liquidity" 
+                              type="number"
+                              value={activeFilters.liquidityMax || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                liquidityMax: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label className="text-white">Transactions Range</Label>
+                          <div className="flex gap-2 mt-2">
+                            <Input 
+                              placeholder="Min TXNs" 
+                              type="number"
+                              value={activeFilters.txnsMin || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                txnsMin: e.target.value ? parseInt(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                            <Input 
+                              placeholder="Max TXNs" 
+                              type="number"
+                              value={activeFilters.txnsMax || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                txnsMax: e.target.value ? parseInt(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Holders Count */}
+                        <div>
+                          <Label className="text-white">Holders Count</Label>
+                          <div className="flex gap-2 mt-2">
+                            <Input 
+                              placeholder="Min" 
+                              type="number"
+                              value={activeFilters.holdersCountMin || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                holdersCountMin: e.target.value ? parseInt(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                            <Input 
+                              placeholder="Max" 
+                              type="number"
+                              value={activeFilters.holdersCountMax || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                holdersCountMax: e.target.value ? parseInt(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Pro Traders Count */}
+                        <div>
+                          <Label className="text-white">Pro Traders Count</Label>
+                          <div className="flex gap-2 mt-2">
+                            <Input 
+                              placeholder="Min" 
+                              type="number"
+                              value={activeFilters.proTradersCountMin || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                proTradersCountMin: e.target.value ? parseInt(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                            <Input 
+                              placeholder="Max" 
+                              type="number"
+                              value={activeFilters.proTradersCountMax || ''} 
+                              onChange={(e) => setActiveFilters(prev => ({ 
+                                ...prev, 
+                                proTradersCountMax: e.target.value ? parseInt(e.target.value) : null 
+                              }))}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                          </div>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
                   </div>
                 </SheetContent>
               </Sheet>
@@ -594,6 +976,11 @@ const TrendingTokensTable = ({ timeframe, buyAmount }: { timeframe: string; buyA
                             </div>
                             <div className="flex items-center gap-1 mt-1">
                               <div className="text-xs text-slate-500">{timeframe}</div>
+                              {token.protocol && (
+                                <Badge variant="outline" className="text-xs border-slate-600 text-slate-400">
+                                  {token.protocol}
+                                </Badge>
+                              )}
                               <div className="flex items-center gap-1 ml-2">
                                 {token.socials.twitter && (
                                   <HoverCard>
